@@ -1,0 +1,253 @@
+#!/usr/bin/env python
+#
+# Copyright 2011 Rodrigo Ancavil del Pino
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+""" Implementation of webservices API 0.9 """
+
+import tornado.httpserver
+import tornado.ioloop
+import tornado.web
+import xml.dom.minidom
+import string
+from tornadows import soap
+from tornadows import xmltypes
+from tornadows import wsdl
+
+""" Globals variables. """
+wsdl_nameservice = None
+wsdl_targetns = None
+wsdl_input = None
+wsdl_output = None
+wsdl_operation = None
+wsdl_location = None
+wsdl_path = None
+
+def soapmethod(*params,**kwparams):
+	""" Decorator method for web services operators """
+	def method(f):
+		_is_complexType = True
+		if len(kwparams) > 0:
+			_params = kwparams['_params']
+			_returns = kwparams['_returns']
+			if isinstance(_params,list) or issubclass(_params,xmltypes.PrimitiveType) or \
+			   isinstance(_returns,list) or issubclass(_returns,xmltypes.PrimitiveType):
+				_is_complexType = False
+				global wsdl_input, wsdl_output, wsdl_operation
+				wsdl_input = _params
+				wsdl_output = _returns
+				wsdl_operation = f.func_name
+			elif isinstance(_params,xml.dom.minidom.Document) and isinstance(_returns,xml.dom.minidom.Document):
+				_is_complexType = True
+		def operation(*args,**kwargs):
+			return f(*args,**kwargs)
+
+		operation.func_name = f.func_name
+		operation._is_operation = True
+		operation._is_complexType = _is_complexType
+		return operation
+	return method
+
+def soapfault(faultstring):
+	""" Method for generate a soap fault
+	    soapfault() return a SoapMessage() object with a message 
+	    for Soap Envelope
+	 """
+	fault = soap.SoapMessage()
+	faultmsg  = b'<soapenv:Fault xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope">\n'
+	faultmsg += b'<faultcode></faultcode>\n'
+	faultmsg += b'<faultstring>%s</faultstring>\n'%faultstring
+	faultmsg += b'</soapenv:Fault>\n'
+	fault.setBody(xml.dom.minidom.parseString(faultmsg))
+	return fault
+
+class WebService(tornado.web.Application):
+	""" A implementation of web services for tornado web server.
+
+		import tornado.httpserver
+		import tornado.ioloop
+		import tornado.web
+		import webservices
+		import xmltypes
+	    
+		class MyService(webservices.SoapHandler):
+			@soapmethod(_params=[xmltypes.Integer, xmltypes.Integer],_returns=xmltypes.Integer)
+			def sum(self, value1, value2):
+				result = value1 + value2
+	
+				return result  
+
+		if __name__ == "__main__":
+			app = webservices.WebService("MyService",MyService)
+			ws_server = tornado.httpserver.HTTPServer(app)
+			ws_server.listen(8080)
+			tornado.ioloop.IOLoop.instance().start()
+		
+	"""
+	def __init__(self,service,object,wsdl=None):
+		""" Initializes the application for web services
+
+		    Instances of this class are callable and can be passed to
+		    HTTPServer of tornado to serve the web services.
+
+		    The constructor for this class takes the name for the web 
+		    service (service), the class with the web service (object) 
+		    and wsdl with the wsdl file path (if this exist).
+		 """
+		global wsdl_path
+		wsdl_path = wsdl
+		self._service = service
+		self._object = object
+		self._services = [(r"/"+str(self._service),self._object),
+				  (r"/"+str(self._service)+"/",self._object),]
+		tornado.web.Application.__init__(self,self._services)
+		global wsdl_nameservice
+		wsdl_nameservice = service
+
+class SoapHandler(tornado.web.RequestHandler):
+	""" This subclass extends tornado.web.RequestHandler class, defining the 
+	    methods get() and post() for handle a soap message (request and response).
+	 """
+	def get(self):
+		""" Method get() returned the WSDL. If wsdl_path is null, the
+		    WSDL is generated dinamically.
+		"""
+		address = tornado.httpserver.socket.gethostbyname(tornado.httpserver.socket.gethostname())
+		port = self.request.headers['Host'].split(':')[1]
+		
+		global wsdl_targetns,wsdl_location
+		wsdl_targetns = 'http://%s:%s/%s/%s'%(address,port,wsdl_nameservice,wsdl_operation)
+		wsdl_location = 'http://%s:%s/%s'%(address,port,wsdl_nameservice)
+		query = self.request.query
+		self.set_header('Content-Type','application/xml; charset=UTF-8')
+		if string.upper(query) == 'WSDL':
+			if wsdl_path == None:
+				wsdlfile = wsdl.Wsdl(nameservice=wsdl_nameservice,
+						     targetNamespace=wsdl_targetns,
+						     elementInput=('params',wsdl_input),
+					    	     elementOutput=('returns',wsdl_output),
+					     	     operation=wsdl_operation,
+					     	     location=wsdl_location)
+				self.finish(wsdlfile.createWsdl().toxml())
+			else:
+				fd = open(str(wsdl_path),'r')
+				xmlWSDL = ''
+				for line in fd:
+					xmlWSDL += line
+				fd.close()
+				self.finish(xmlWSDL)
+
+	def post(self):
+		""" Method post() to process of requests and responses SOAP messages """
+		try:
+			self._request = self._parseSoap(self.request.body)
+			self.set_header('Content-Type','text/xml')
+			for operations in dir(self):
+				operation = getattr(self,operations)
+				if callable(operation) and hasattr(operation,'_is_operation'):
+					if getattr(operation,'_is_complexType'):
+						self._response = operation(self._request)
+					else:
+						params = []
+						params = self._parseParams(self._request.getBody()[0],params)
+						response = operation(*params)
+						self._response = self._createReturns(response)
+
+			soapmsg = self._response.getSoap().toxml()
+			self.write(soapmsg)
+		except Exception as detail:
+			fault = soapfault('Error in web service : %s'%detail)
+			self.write(fault.getSoap().toxml())
+
+	def _parseSoap(self,xmldoc):
+		""" Private method parse a message soap from a xmldoc like string
+		    _parseSoap() return a soap.SoapMessage().
+		"""
+		xmldoc = xmldoc.replace('\n',' ').replace('\t',' ').replace('\r',' ')
+		document = xml.dom.minidom.parseString(xmldoc)
+		prefix = document.documentElement.prefix
+		header = None
+		body = None
+		if prefix != None:
+			header = document.getElementsByTagName(prefix+':Header')
+			body = document.getElementsByTagName(prefix+':Body')
+		else:
+			header = document.getElementsByTagName('Header')
+			body = document.getElementsByTagName('Body')
+
+		header_elements = self._parseXML(header)
+		body_elements = self._parseXML(body)
+		
+		soapMsg = soap.SoapMessage()
+		for h in header_elements:
+			soapMsg.setHeader(h)
+		for b in body_elements:
+			soapMsg.setBody(b)
+
+		return soapMsg
+
+	def _parseXML(self,elements):
+		""" Private method parse and digest the xml.dom.minidom.Element 
+		    finding the childs of Header and Body from soap message. 
+		    Return a list object with all of child Elements.
+		"""
+		elem_list = []
+		if len(elements) <= 0:
+			return elem_list
+		if elements[0].childNodes.length <= 0:
+			return elem_list
+		for element in elements[0].childNodes:
+			if element.nodeType == element.ELEMENT_NODE:
+				prefix = element.prefix
+				namespace = element.namespaceURI
+				if prefix != None and namespace != None:
+					element.setAttribute('xmlns:'+prefix,namespace)
+				elem_list.append(xml.dom.minidom.parseString(element.toxml()))
+		return elem_list
+	
+	def _parseParams(self,elements,params):
+		""" Private method to parse a Body element of SOAP Envelope and extract
+		    the values of the request document like parameters for the soapmethod,
+		    this method return a list values of parameters.
+		 """
+		if elements.hasChildNodes:
+			for element in elements.childNodes:
+				if element.nodeType == element.TEXT_NODE:
+					s = str(element.nodeValue)
+					if s.strip() != '':
+						params.append(str(element.nodeValue).strip())
+				else:
+					self._parseParams(element,params)
+			return params
+	
+	def _createReturns(self,result):
+		""" Private method to generate the xml document with the response. 
+		    Return a SoapMessage().
+		"""
+		xmlresponse = ''
+		if isinstance(result,list):
+			xmlresponse = '<response>\n'
+			i = 1
+			for r in result:
+				xmlresponse += '<value%d>%s</value%d>\n'%(i,str(r),i)
+				i+=1
+			xmlresponse += '</response>\n'
+		else:
+			xmlresponse = '<response>%s</response>\n'%str(result)
+	
+		response = xml.dom.minidom.parseString(xmlresponse)
+		
+		soapResponse = soap.SoapMessage()
+		soapResponse.setBody(response)
+		return soapResponse
