@@ -54,9 +54,9 @@ class Array:
 	    if you specify xmltypes.Array(xmltypes.Integer,10), is generated:
 		<xsd:element name="arrayOfElement" type="xsd:integer" maxOccurs="10"/>
 	"""
-	def __init__(self,type,n=None):
+	def __init__(self,type,maxOccurs=None):
 		self._type = type
-		self._n    = n
+		self._n    = maxOccurs
 	def createArray(self,name):
 		type = self._type.getType(self._type)
 		return createArrayXML(name,type,'xsd',self._n)
