@@ -13,17 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
-""" ToDO:
-	Include all types defined for xml specification
+""" 
+	Are incorporated the primitive datatypes defined by XML.
+	Array is defined for the use of array of elements and his respective datatype.
 """
 
-class PrimitiveType:
-	pass
-
 def createElementXML(name,type,prefix='xsd'):
+	""" Function used for the creation of xml elements. """
 	return b'<%s:element name="%s" type="%s:%s"/>'%(prefix,name,prefix,type)
 
 def createArrayXML(name,type,prefix='xsd',maxoccurs=None):
+	""" Function used for the creation of xml complexElements """
 	complexType  = b'<%s:complexType name="%sParams">\n'%(prefix,name)
 	complexType += b'<%s:sequence>\n'%prefix
 	if maxoccurs == None:
@@ -36,6 +36,24 @@ def createArrayXML(name,type,prefix='xsd',maxoccurs=None):
 	return complexType
 
 class Array:
+	""" Create arrays of xml elements.
+	    
+	    Here an example:
+
+	    @webservices(_params=xmltypes.Array(xmltypes.Integer),_returns=xmltypes.Integer)
+	    def function(sefl, list_of_elements):
+		for e in list_of_elements:
+			# Do something with the element    
+        	return len(list_of_elements)
+
+	    xmltypes.Array(xmltype.Integer) generate an xml element into schema definition:
+		<xsd:element name="arrayOfElement" type="xsd:integer" maxOccurs="unbounded"/>
+
+	    this make the parameter of the function list_of_elements is a python list.
+
+	    if you specify xmltypes.Array(xmltypes.Integer,10), is generated:
+		<xsd:element name="arrayOfElement" type="xsd:integer" maxOccurs="10"/>
+	"""
 	def __init__(self,type,n=None):
 		self._type = type
 		self._n    = n
@@ -55,7 +73,12 @@ class Array:
 	def genType(self,v):
 		return self._type.genType(self._type,v)
 
+class PrimitiveType:
+	""" Class father for all derived types. """
+	pass
+
 class Integer(PrimitiveType):
+	""" 1. XML primitive type : integer """
 	@staticmethod
 	def createElement(name,prefix='xsd'):
 		return createElementXML(name,'integer')
@@ -66,7 +89,20 @@ class Integer(PrimitiveType):
 	def genType(self,v):
 		return int(v)
 
+class Decimal(PrimitiveType):
+	""" 2. XML primitive type : decimal """
+	@staticmethod
+	def createElement(name,prefix='xsd'):
+		return createElementXML(name,'decimal')
+	@staticmethod
+	def getType(self):
+		return 'decimal'
+	@staticmethod
+	def genType(self,v):
+		return float(v)
+
 class Double(PrimitiveType):
+	""" 3. XML primitive type : double """
 	@staticmethod
 	def createElement(name,prefix='xsd'):
 		return createElementXML(name,'double')
@@ -77,7 +113,32 @@ class Double(PrimitiveType):
 	def genType(self,v):
 		return float(v)
 
+class Float(PrimitiveType):
+	""" 4. XML primitive type : float """
+	@staticmethod
+	def createElement(name,prefix='xsd'):
+		return createElementXML(name,'float')
+	@staticmethod
+	def getType(self):
+		return 'float'
+	@staticmethod
+	def genType(self,v):
+		return float(v)
+
+class Duration(PrimitiveType):
+	""" 5. XML primitive type : duration """
+	@staticmethod
+	def createElement(name,prefix='xsd'):
+		return createElementXML(name,'duration')
+	@staticmethod
+	def getType(self):
+		return 'duration'
+	@staticmethod
+	def genType(self,v):
+		return str(v)
+
 class Date(PrimitiveType):
+	""" 6. XML primitive type : date """
 	@staticmethod
 	def createElement(name,prefix='xsd'):
 		return createElementXML(name,'date')
@@ -88,7 +149,20 @@ class Date(PrimitiveType):
 	def genType(self,v):
 		return str(v)
 
+class Time(PrimitiveType):
+	""" 7. XML primitive type : time """
+	@staticmethod
+	def createElement(name,prefix='xsd'):
+		return createElementXML(name,'time')
+	@staticmethod
+	def getType(self):
+		return 'time'
+	@staticmethod
+	def genType(self,v):
+		return str(v)
+
 class DateTime(PrimitiveType):
+	""" 8. XML primitive type : dateTime """
 	@staticmethod
 	def createElement(name,prefix='xsd'):
 		return createElementXML(name,'datetime')
@@ -100,12 +174,25 @@ class DateTime(PrimitiveType):
 		return str(v)
 
 class String(PrimitiveType):
+	""" 9. XML primitive type : string """
 	@staticmethod
 	def createElement(name,prefix='xsd'):
 		return createElementXML(name,'string')
 	@staticmethod
 	def getType(self):
 		return 'string'
+	@staticmethod
+	def genType(self,v):
+		return str(v)
+
+class Boolean(PrimitiveType):
+	""" 10. XML primitive type : boolean """
+	@staticmethod
+	def createElement(name,prefix='xsd'):
+		return createElementXML(name,'boolean')
+	@staticmethod
+	def getType(self):
+		return 'boolean'
 	@staticmethod
 	def genType(self,v):
 		return str(v)
