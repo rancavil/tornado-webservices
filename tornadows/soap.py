@@ -21,14 +21,14 @@ import xml.dom.minidom
 class SoapMessage:
 	""" Implementation of a envelope soap 1.1 with minidom API
 
-	        import soap
+	        import tornadows.soap
 		import xml.dom.minidom
 
-		soapenvelope = soap.SoapMessage()
+		soapenvelope = tornadows.soap.SoapMessage()
 		xmlDoc = xml.dom.minidom.parseString('<Doc>Hello, world!!!</Doc>')
 		soapenvelope.setBody(xmlDoc)
 		for s in soapenvelope.getBody():
-			s.toxml()
+			print s.toxml()
 
 	"""
 	def __init__(self):
