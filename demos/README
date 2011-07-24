@@ -1,0 +1,42 @@
+Running the DemoService.py example:
+----------------------------------
+
+Running:
+
+	$ python DemoServices.py
+
+The example display four separate services.
+
+1. EchoService (http://localhost:8080/EchoService?wsdl):
+
+	For an input string responds with an echo message.
+
+2. CountService (http://localhost:8080/CountService?wsdl):
+
+	The operation receives as input an python list an returns the numbers of 
+	elements in the list.
+
+	This service used _params=xmltypes.Array(xmltypes.String) like input, 
+	what mean his input parameter is a array of string elements.
+	
+	xmltypes.Array(xmltypes.String) create an xml element with maxOccurs
+	property with the value "unbounded" for wsdl.
+
+3. DivService (http://localhost:8080/DivService?wsdl):
+
+	The operation receives as input two float numbers and returns the result 
+	of the deivision of this numbers.
+
+4.- Finally, FibonacciService (http://localhost:8080/FibonacciService?wsdl):
+
+	Returns a list with the fibonacci's numbers.
+
+	This services return an _return=xmltypes.Array(xmltypes.Integer) what
+	mean the operation of service return an list of integer elements.
+
+	xmltypes.Array(xmltypes.Integer), create an xml element with maxOccurs
+	property with the value "unbounded" for wsdl.
+
+You can probe this services with SoapUI or creating a web services client with 
+your favorite programming language.
+
