@@ -71,7 +71,7 @@ class Array:
 			complexType += b'<%s:element name="%s" type="%s:%s" maxOccurs="%d"/>\n'%(prefix,name,prefix,type,maxoccurs)
 		return complexType
 	def genType(self,v):
-		return self._type.genType(self._type,v)
+		return self._type.genType(v)
 
 class PrimitiveType:
 	""" Class father for all derived types. """
@@ -85,7 +85,7 @@ class Integer(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'integer'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return int(v)
 
@@ -97,7 +97,7 @@ class Decimal(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'decimal'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return float(v)
 
@@ -109,7 +109,7 @@ class Double(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'double'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return float(v)
 
@@ -121,7 +121,7 @@ class Float(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'float'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return float(v)
 
@@ -133,7 +133,7 @@ class Duration(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'duration'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return str(v)
 
@@ -145,7 +145,7 @@ class Date(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'date'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return str(v)
 
@@ -157,7 +157,7 @@ class Time(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'time'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return str(v)
 
@@ -169,7 +169,7 @@ class DateTime(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'datetime'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return str(v)
 
@@ -181,7 +181,7 @@ class String(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'string'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return str(v)
 
@@ -193,6 +193,6 @@ class Boolean(PrimitiveType):
 	@staticmethod
 	def getType(self):
 		return 'boolean'
-	@staticmethod
+	@classmethod
 	def genType(self,v):
 		return str(v)
