@@ -23,6 +23,7 @@ import string
 import inspect
 from tornadows import soap
 from tornadows import xmltypes
+from tornadows import complextypes
 from tornadows import wsdl
 
 """ Global variable. If you want use your own wsdl file """
@@ -37,7 +38,10 @@ def webservice(*params,**kwparams):
 		_outputArray = False
 		if len(kwparams):
 			_params = kwparams['_params']
-			if isinstance(_params,list):
+			if inspect.isclass(_params) and issubclass(_params,complextypes.ComplexType):
+				_args = inspect.getargspec(f).args[1:]
+				_input = _params
+			elif isinstance(_params,list):
 				_args = inspect.getargspec(f).args[1:]
 				_input = {}
 				i = 0
@@ -56,7 +60,7 @@ def webservice(*params,**kwparams):
 			if isinstance(_returns,xmltypes.Array):
 				_output = _returns
 				_outputArray = True
-			elif isinstance(_returns,list) or issubclass(_returns,xmltypes.PrimitiveType):
+			elif isinstance(_returns,list) or issubclass(_returns,xmltypes.PrimitiveType) or issubclass(_returns,complextypes.ComplexType):
 				_output = _returns
 		def operation(*args,**kwargs):
 			return f(*args,**kwargs)
@@ -143,15 +147,23 @@ class SoapHandler(tornado.web.RequestHandler):
 					params = []
 					response = None
 					types = getattr(operation,'_input')
-					params = self._parseParams(self._request.getBody()[0],params,types)
-					if hasattr(operation,'_inputArray') and getattr(operation,'_inputArray'):
+					if inspect.isclass(types) and issubclass(types,complextypes.ComplexType):
+						obj = self._parseComplexType(types.getName(),xml.dom.minidom.parseString(types.toXSD()),self._request.getBody()[0])
+						response = operation(obj)
+					elif hasattr(operation,'_inputArray') and getattr(operation,'_inputArray'):
+						params = self._parseParams(self._request.getBody()[0],params,types)
 						response = operation(params)
 					else:
+						params = self._parseParams(self._request.getBody()[0],params,types)
 						response = operation(*params)
 					is_array = None
 					if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
 						is_array = getattr(operation,'_outputArray')
-					self._response = self._createReturns(response,is_array)
+					
+					if inspect.isclass(types) and issubclass(types,complextypes.ComplexType):
+						self._response = self._createReturnsComplexType(response)
+					else:
+						self._response = self._createReturns(response,is_array)
 
 			soapmsg = self._response.getSoap().toxml()
 			self.write(soapmsg)
@@ -204,6 +216,62 @@ class SoapHandler(tornado.web.RequestHandler):
 					element.setAttribute('xmlns:'+prefix,namespace)
 				elem_list.append(xml.dom.minidom.parseString(element.toxml()))
 		return elem_list
+
+	def _parseComplexType(self,nameclass,xsd,xml):
+		""" Private method for generate an instance of class nameclass. """
+		elems = xsd.getElementsByTagName('xsd:element')
+		attr = []
+		for e in elems:
+			attr.append((e.getAttribute('name'),e.getAttribute('type')))
+		
+		dct = {}
+		for e in attr:
+			nameElement = e[0]
+			typeElement = e[1]
+			elements = xml.getElementsByTagName(nameElement)
+			for value in elements:
+				for v in value.childNodes:
+					d = self._createProperty(typeElement,v.nodeValue)
+					dct[str(nameElement)] = d
+		Obj = type(nameclass,(object,complextypes.ComplexType,),dct)
+		o = Obj() 
+		return o
+	
+	def _createProperty(self,type,value):
+		""" Private method for generate an instance of subclass of Property class. """
+		ct = None
+		if type == 'xsd:integer':
+			ct = complextypes.IntegerProperty()
+			ct.value = xmltypes.Integer.genType(value)
+		elif type == 'xsd:decimal':
+			ct = complextypes.DecimalProperty()
+			ct.value = xmltypes.Decimal.genType(value)
+		elif type == 'xsd:double':
+			ct = complextypes.DoubleProperty()
+			ct.value = xmltypes.Double.genType(value)
+		elif type == 'xsd:float':
+			ct = complextypes.FloatProperty()
+			ct.value = xmltypes.Float.genType(value)
+		elif type == 'xsd:duration':
+			ct = complextypes.DurationProperty()
+			ct.value = xmltypes.Duration.genType(value)
+		elif type == 'xsd:date':
+			ct = complextypes.DateProperty()
+			ct.value = xmltypes.Date.genType(value)
+		elif type == 'xsd:time':
+			ct = complextypes.TimeProperty()
+			ct.value = xmltypes.Time.genType(value)
+		elif type == 'xsd:datetime':
+			ct = complextypes.DateTimeProperty()
+			ct.value = xmltypes.DateTime.genType(value)
+		elif type == 'xsd:string':
+			ct = complextypes.StringProperty()
+			ct.value = xmltypes.String.genType(value)
+		elif type == 'xsd:boolean':
+			ct = complextypes.BooleanProperty()
+			ct.value = xmltypes.Boolean.genType(value)
+
+		return ct
 	
 	def _parseParams(self,elements,params,types=None):
 		""" Private method to parse a Body element of SOAP Envelope and extract
@@ -220,29 +288,39 @@ class SoapHandler(tornado.web.RequestHandler):
 						if isinstance(types[name],xmltypes.Array):
 							v = types[name].genType(str(element.nodeValue.strip()))
 						else:
-							v = types[name].genType(types[name],str(element.nodeValue.strip()))
+							v = types[name].genType(str(element.nodeValue.strip()))
 						params.append(v)
 				else:
 					self._parseParams(element,params,types)
 			return params
-	
+
+	def _createReturnsComplexType(self,result):
+		""" Private method to generate the xml document with the response. 
+		    Return an SoapMessage() with XML document.
+		"""
+		response = xml.dom.minidom.parseString(result.toXML())
+		
+		soapResponse = soap.SoapMessage()
+		soapResponse.setBody(response)
+		return soapResponse
+			
 	def _createReturns(self,result,is_array):
 		""" Private method to generate the xml document with the response. 
-		    Return a SoapMessage().
+		    Return an SoapMessage().
 		"""
-		xmlresponse = ''
+		xmlresponse = b''
 		if isinstance(result,list):
-			xmlresponse = '<returns>\n'
+			xmlresponse = b'<returns>\n'
 			i = 1
 			for r in result:
 				if is_array == True:
-					xmlresponse += '<value>%s</value>\n'%str(r)
+					xmlresponse += b'<value>%s</value>\n'%str(r)
 				else:
-					xmlresponse += '<value%d>%s</value%d>\n'%(i,str(r),i)
+					xmlresponse += b'<value%d>%s</value%d>\n'%(i,str(r),i)
 				i+=1
-			xmlresponse += '</returns>\n'
+			xmlresponse += b'</returns>\n'
 		else:
-			xmlresponse = '<returns>%s</returns>\n'%str(result)
+			xmlresponse = b'<returns>%s</returns>\n'%str(result)
 	
 		response = xml.dom.minidom.parseString(xmlresponse)
 		
