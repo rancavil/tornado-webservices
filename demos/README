@@ -1,5 +1,5 @@
 Running the DemoService.py example:
-----------------------------------
+-----------------------------------
 
 Running:
 
@@ -40,3 +40,80 @@ The example display four separate services.
 You can probe this services with SoapUI or creating a web services client with 
 your favorite programming language.
 
+Running the ProducService.py example:
+-------------------------------------
+
+Running:
+
+	$ python ProductService.py
+
+1.- ProductService (http://localhost:8080/ProductService?wsdl):
+
+	This web service uses complextypes by transforming a python class in an
+	xml schema within the definition of the schemas of WSDL.
+
+	For example:
+		
+		from tornadows import complextypes
+	
+		class Product(complextypes.ComplexType):
+			id    = complextypes.IntegerPropert()
+			name  = complextypes.StringProperty()
+			price = complextypes.FloatProperty()
+			stock = complextypes.IntegerProperty()
+
+	The class is tranformed into the following xml schema.
+
+		 <xsd:complexType name="Product" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<xsd:sequence>
+				<xsd:element name="id"    type="xsd:integer"/>
+				<xsd:element name="name"  type="xsd:string"/>
+				<xsd:element name="price" type="xsd:float"/>
+				<xsd:element name="stock" type="xsd:integer"/>
+			</xsd:sequence>
+		</xsd:complexType>
+
+	In the WSDL, xml schema is seen as follows.
+
+		<wsdl:types>
+			<xsd:schema targetNamespace="http://127.0.1.1:8080/ProductService/getProduct">
+				<xsd:complexType name="Product">
+					<xsd:sequence>
+						<xsd:element name="id"    type="xsd:integer"/>
+						<xsd:element name="name"  type="xsd:string"/>
+						<xsd:element name="price" type="xsd:float"/>
+						<xsd:element name="stock" type="xsd:integer"/>
+					</xsd:sequence>
+				</xsd:complexType>
+				<xsd:element name="Product" type="tns:Product"/>
+			</xsd:schema>
+		</wsdl:types>
+
+	In the example, the SOAP envelope is seen as follows.
+
+	The request is:
+
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:get="http://127.0.1.1:8080/ProductService/getProduct">
+   			<soapenv:Header/>
+   			<soapenv:Body>
+      				<get:Input>
+         				<idProduct>1</idProduct>
+      				</get:Input>
+   			</soapenv:Body>
+		</soapenv:Envelope>
+ 	
+	The response of the web service is:
+
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+   			<soapenv:Header/>
+   				<soapenv:Body>
+      					<Product>
+         					<id>1</id>
+         					<name>COMPUTER</name>
+         					<price>1000.5</price>
+         					<stock>100</stock>
+      					</Product>
+   				</soapenv:Body>
+			</soapenv:Envelope>
+	
+	You can use the SoapUI for testing. See the code in the ProductService.py
