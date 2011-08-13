@@ -2,7 +2,6 @@ import tornado.httpserver
 import tornado.ioloop
 from tornadows import soaphandler
 from tornadows import webservices
-from tornadows import xmltypes
 from tornadows import complextypes
 from tornadows.soaphandler import webservice
 
