@@ -47,8 +47,8 @@ class ProductService(soaphandler.SoapHandler):
 		return row
 	
 if __name__ == '__main__':
-  service = [('ProductService',ProductService)]
-  app = webservices.WebService(service)
-  ws  = tornado.httpserver.HTTPServer(app)
-  ws.listen(8080)
-  tornado.ioloop.IOLoop.instance().start()
+	service = [('ProductService',ProductService)]
+	app = webservices.WebService(service)
+	ws  = tornado.httpserver.HTTPServer(app)
+	ws.listen(8080)
+	tornado.ioloop.IOLoop.instance().start()
