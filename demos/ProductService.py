@@ -15,19 +15,19 @@ class Product(complextypes.ComplexType):
 	stock = complextypes.IntegerProperty()
 
 class ProductService(soaphandler.SoapHandler):
-  	@webservice(_params=Input,_returns=Product)
-  	def getProduct(self, input):
-     		id = input.idProduct.value
+	@webservice(_params=Input,_returns=Product)
+	def getProduct(self, input):
+		id = input.idProduct.value
 		
 		reg = self.database(id)
 
-     		output = Product()
+		output = Product()
 		output.id.value    = id
-     		output.name.value  = reg[0]
+		output.name.value  = reg[0]
 		output.price.value = reg[1]
 		output.stock.value = reg[2]
 
-     		return output
+		return output
 
 	def database(self,id):
 		""" This method simulates a database of products """
