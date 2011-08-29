@@ -25,11 +25,12 @@ class WebService(tornado.web.Application):
 
 		import tornado.httpserver
 		import tornado.ioloop
-		import tornado.web
-		import webservices
-		import xmltypes
-	    
-		class MyService(webservices.SoapHandler):
+		from tornadows import webservices
+		from tornadows import xmltypes
+	   	from tornadows import soaphandler
+		from tornadows.soaphandler import webservice
+ 
+		class MyService(soaphandler.SoapHandler):
 			@webservice(_params=[xmltypes.Integer, xmltypes.Integer],_returns=xmltypes.Integer)
 			def sum(self, value1, value2):
 				result = value1 + value2
