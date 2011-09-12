@@ -36,6 +36,7 @@ def webservice(*params,**kwparams):
 		_output = None
 		_inputArray = False
 		_outputArray = False
+		_args = None
 		if len(kwparams):
 			_params = kwparams['_params']
 			if inspect.isclass(_params) and issubclass(_params,complextypes.ComplexType):
@@ -147,14 +148,15 @@ class SoapHandler(tornado.web.RequestHandler):
 					params = []
 					response = None
 					types = getattr(operation,'_input')
+					args  = getattr(operation,'_args')
 					if inspect.isclass(types) and issubclass(types,complextypes.ComplexType):
 						obj = self._parseComplexType(types.getName(),xml.dom.minidom.parseString(types.toXSD()),self._request.getBody()[0])
 						response = operation(obj)
 					elif hasattr(operation,'_inputArray') and getattr(operation,'_inputArray'):
-						params = self._parseParams(self._request.getBody()[0],params,types)
+						params = self._parseParams(self._request.getBody()[0],types,args)
 						response = operation(params)
 					else:
-						params = self._parseParams(self._request.getBody()[0],params,types)
+						params = self._parseParams(self._request.getBody()[0],types,args)
 						response = operation(*params)
 					is_array = None
 					if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
@@ -272,27 +274,29 @@ class SoapHandler(tornado.web.RequestHandler):
 			ct.value = xmltypes.Boolean.genType(value)
 
 		return ct
-	
-	def _parseParams(self,elements,params,types=None):
+
+	def _parseParams(self,elements,types=None,args=None):
 		""" Private method to parse a Body element of SOAP Envelope and extract
 		    the values of the request document like parameters for the soapmethod,
 		    this method return a list values of parameters.
 		 """
-		if elements.hasChildNodes:
-			for element in elements.childNodes:
-				if element.nodeType == element.TEXT_NODE:
-					s = str(element.nodeValue)
-					if s.strip() != '':
-						name = element.parentNode.tagName
-						v = None
-						if isinstance(types[name],xmltypes.Array):
-							v = types[name].genType(str(element.nodeValue.strip()))
-						else:
-							v = types[name].genType(str(element.nodeValue.strip()))
-						params.append(v)
-				else:
-					self._parseParams(element,params,types)
-			return params
+		values   = []
+		for tagname in args:
+			type = types[tagname]
+			values += self._findValues(tagname,type,elements)
+		return values		
+
+	def _findValues(self,name,type,xml):
+		""" Private method to find the values of elements in the XML of input """
+		elems = xml.getElementsByTagName(name)
+		values = []
+		for e in elems:
+			if e.hasChildNodes and len(e.childNodes) > 0:
+				v = type.genType(e.childNodes[0].nodeValue)
+				values.append(v)
+			else:
+				values.append(None)
+		return values
 
 	def _createReturnsComplexType(self,result):
 		""" Private method to generate the xml document with the response. 
