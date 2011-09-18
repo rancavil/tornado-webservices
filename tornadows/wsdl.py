@@ -40,10 +40,10 @@ class Wsdl:
 		typeOutput = None
 		types  = b'<wsdl:types>\n'
 		types += b'<xsd:schema targetNamespace="%s">\n'%self._namespace
+
 		if inspect.isclass(self._elementInput) and issubclass(self._elementInput,complextypes.ComplexType): 
 			typeInput = self._elementInput.getName()
 			types += self._elementInput.toXSD()
-			types += b'<xsd:element name="%s" type="tns:%s"/>'%(typeInput,self._elementInput.getName())
 		elif isinstance(self._elementInput,dict):
 			typeInput = self._elementNameInput
 			types += self._createComplexTypes(self._elementNameInput, self._arguments, self._elementInput)
@@ -53,16 +53,17 @@ class Wsdl:
 		elif isinstance(self._elementInput,list) or issubclass(self._elementInput,xmltypes.PrimitiveType):
 			typeInput  = self._elementNameInput
 			types += self._createTypes(typeInput,self._elementInput)
+
 		if inspect.isclass(self._elementOutput) and issubclass(self._elementOutput,complextypes.ComplexType): 
 			typeOutput = self._elementOutput.getName()
 			types += self._elementOutput.toXSD()
-			types += b'<xsd:element name="%s" type="tns:%s"/>'%(typeOutput,self._elementOutput.getName())
 		elif isinstance(self._elementOutput,xmltypes.Array):
 			typeOutput = self._elementNameOutput
 			types += self._elementOutput.createArray(typeOutput)
 		elif isinstance(self._elementOutput,list) or issubclass(self._elementOutput,xmltypes.PrimitiveType):
 			typeOutput = self._elementNameOutput
 			types += self._createTypes(typeOutput,self._elementOutput)
+
 		types += b'</xsd:schema>\n'
 		types += b'</wsdl:types>\n'
 		messages  = b'<wsdl:message name="%sRequest">\n'%self._nameservice
