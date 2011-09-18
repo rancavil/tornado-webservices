@@ -25,7 +25,7 @@ class EchoService(soaphandler.SoapHandler):
 	""" Echo Service """
 	@webservice(_params=xmltypes.String,_returns=xmltypes.String)
   	def echo(self, message):
-     		return 'Echo say : '+message
+		return 'Echo say : %s'%message
 
 class CountService(soaphandler.SoapHandler):
 	""" Service that counts the number of items in a list """
