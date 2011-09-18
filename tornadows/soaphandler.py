@@ -147,22 +147,23 @@ class SoapHandler(tornado.web.RequestHandler):
 				if callable(operation) and hasattr(operation,'_is_operation'):
 					params = []
 					response = None
-					types = getattr(operation,'_input')
+					typesinput = getattr(operation,'_input')
 					args  = getattr(operation,'_args')
-					if inspect.isclass(types) and issubclass(types,complextypes.ComplexType):
-						obj = self._parseComplexType(types.getName(),xml.dom.minidom.parseString(types.toXSD()),self._request.getBody()[0])
+					if inspect.isclass(typesinput) and issubclass(typesinput,complextypes.ComplexType):
+						obj = self._parseComplexType(typesinput,self._request.getBody()[0])
 						response = operation(obj)
 					elif hasattr(operation,'_inputArray') and getattr(operation,'_inputArray'):
-						params = self._parseParams(self._request.getBody()[0],types,args)
+						params = self._parseParams(self._request.getBody()[0],typesinput,args)
 						response = operation(params)
 					else:
-						params = self._parseParams(self._request.getBody()[0],types,args)
+						params = self._parseParams(self._request.getBody()[0],typesinput,args)
 						response = operation(*params)
 					is_array = None
 					if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
 						is_array = getattr(operation,'_outputArray')
-					
-					if inspect.isclass(types) and issubclass(types,complextypes.ComplexType):
+				
+					typesoutput = getattr(operation,'_output')
+					if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
 						self._response = self._createReturnsComplexType(response)
 					else:
 						self._response = self._createReturns(response,is_array)
@@ -171,7 +172,7 @@ class SoapHandler(tornado.web.RequestHandler):
 			self.write(soapmsg)
 		except Exception as detail:
 			fault = soapfault('Error in web service : %s'%detail)
-			self.write(fault.getSoap().toxml())
+		#	self.write(fault.getSoap().toxml())
 
 	def _parseSoap(self,xmldoc):
 		""" Private method parse a message soap from a xmldoc like string
@@ -219,62 +220,16 @@ class SoapHandler(tornado.web.RequestHandler):
 				elem_list.append(xml.dom.minidom.parseString(element.toxml()))
 		return elem_list
 
-	def _parseComplexType(self,nameclass,xsd,xml):
+	def _parseComplexType(self,complex,xmld):
 		""" Private method for generate an instance of class nameclass. """
-		elems = xsd.getElementsByTagName('xsd:element')
-		attr = []
-		for e in elems:
-			attr.append((e.getAttribute('name'),e.getAttribute('type')))
-		
-		dct = {}
-		for e in attr:
-			nameElement = e[0]
-			typeElement = e[1]
-			elements = xml.getElementsByTagName(nameElement)
-			for value in elements:
-				for v in value.childNodes:
-					d = self._createProperty(typeElement,v.nodeValue)
-					dct[str(nameElement)] = d
-		Obj = type(nameclass,(object,complextypes.ComplexType,),dct)
-		o = Obj() 
-		return o
+		xsdd  = b'<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+		xsdd += complex.toXSD()
+		xsdd += b'</xsd:schema>'
+		xsd = xml.dom.minidom.parseString(xsdd)
+		obj = complextypes.xml2object(xmld.toxml(),xsd,complex)
+
+		return obj
 	
-	def _createProperty(self,type,value):
-		""" Private method for generate an instance of subclass of Property class. """
-		ct = None
-		if type == 'xsd:integer':
-			ct = complextypes.IntegerProperty()
-			ct.value = xmltypes.Integer.genType(value)
-		elif type == 'xsd:decimal':
-			ct = complextypes.DecimalProperty()
-			ct.value = xmltypes.Decimal.genType(value)
-		elif type == 'xsd:double':
-			ct = complextypes.DoubleProperty()
-			ct.value = xmltypes.Double.genType(value)
-		elif type == 'xsd:float':
-			ct = complextypes.FloatProperty()
-			ct.value = xmltypes.Float.genType(value)
-		elif type == 'xsd:duration':
-			ct = complextypes.DurationProperty()
-			ct.value = xmltypes.Duration.genType(value)
-		elif type == 'xsd:date':
-			ct = complextypes.DateProperty()
-			ct.value = xmltypes.Date.genType(value)
-		elif type == 'xsd:time':
-			ct = complextypes.TimeProperty()
-			ct.value = xmltypes.Time.genType(value)
-		elif type == 'xsd:datetime':
-			ct = complextypes.DateTimeProperty()
-			ct.value = xmltypes.DateTime.genType(value)
-		elif type == 'xsd:string':
-			ct = complextypes.StringProperty()
-			ct.value = xmltypes.String.genType(value)
-		elif type == 'xsd:boolean':
-			ct = complextypes.BooleanProperty()
-			ct.value = xmltypes.Boolean.genType(value)
-
-		return ct
-
 	def _parseParams(self,elements,types=None,args=None):
 		""" Private method to parse a Body element of SOAP Envelope and extract
 		    the values of the request document like parameters for the soapmethod,
