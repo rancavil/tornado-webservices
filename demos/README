@@ -1,3 +1,5 @@
+This document describes how to run the demos web services.
+
 Running the DemoService.py example:
 -----------------------------------
 
@@ -117,3 +119,101 @@ Running:
 			</soapenv:Envelope>
 	
 	You can use the SoapUI for testing. See the code in the ProductService.py
+
+Running the ProducListService.py example:
+-----------------------------------------
+
+Running:
+	$ python ProductListService.py
+
+	1.- ProductListService (http://localhost:8080/ProductListService?wsdl):
+
+	    The web service implements an operation to retrieve a list of products.
+	    Python types are used to define the attributes of the class; and python 
+	    list to store a set of Product.
+
+Running the UserRolesService.py example:
+----------------------------------------
+
+Running:
+
+	$ python UserRolesService.py
+
+	1.- UserRolesService (http://localhost:8080/UserRolesService?wsdl):
+
+	    This web service uses python list into xml complextypes. This allows create data structures more 
+	    complex.
+
+	    The service receive a idlist (integer) and returns a list of users with username (str) and another
+	    python list with roles.
+
+	    For example:
+		
+	    from tornadows import complextypes
+	
+	    class User(complextypes.ComplexType):
+		username  = str
+		roles     = [str]
+
+	    class ListOfUser(complextypes.ComplexType):
+		idlist = int
+		list   = [User]
+
+	    The classes are tranformed into the following xml schema.
+
+	    <xsd:schema targetNamespace="http://127.0.1.1:8080/UserRolesService/getUsers">
+		<xsd:complexType name="paramsTypes">
+			<xsd:sequence>
+				<xsd:element name="idlist" type="xsd:integer"/>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:element name="params" type="tns:paramsTypes"/>
+
+		<xsd:complexType name="ListOfUser">
+			<xsd:sequence>
+				<xsd:element name="idlist" type="xsd:integer"/>
+				<xsd:element maxOccurs="unbounded" name="list" type="tns:User"/>
+			</xsd:sequence>
+		</xsd:complexType>
+
+		<xsd:complexType name="User">
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" name="roles" type="xsd:string"/>
+				<xsd:element name="username" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:element name="ListOfUser" type="tns:ListOfUser"/>
+	     </xsd:schema>
+	
+	     Python lists are represented like xml elements with the maxOccurs attribute unbounded.	
+	
+	     The soap request is:
+
+	     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:get="http://127.0.1.1:8080/UserRolesService/getUsers">
+   		<soapenv:Header/>
+   		<soapenv:Body>
+      			<get:params>
+         			<idlist>9010</idlist>
+      			</get:params>
+   		</soapenv:Body>
+	     </soapenv:Envelope>
+
+	     The soap response is:
+
+	     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+   		<soapenv:Header/>
+   		<soapenv:Body>
+      			<ListOfUser>
+         			<idlist>9010</idlist>
+         			<list>
+            				<roles>ceo</roles>
+            				<roles>admin</roles>
+            				<username>steve</username>
+         			</list>
+         			<list>
+            				<roles>developer</roles>
+            				<username>billy</username>
+         			</list>
+      			</ListOfUser>
+   		</soapenv:Body>
+	     </soapenv:Envelope>
