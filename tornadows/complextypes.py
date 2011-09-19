@@ -241,7 +241,7 @@ class ComplexType(object):
 				continue
 			if isinstance(element,Property):
 				xsd += element.type.createElement(str(key))
-			elif isinstance(element,ComplexType) or issublclass(element,ComplexType):
+			elif isinstance(element,ComplexType) or issubclass(element,ComplexType):
 				nameinstance = key
 				complextype.append(element._generateXSD())
 				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
