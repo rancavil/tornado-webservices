@@ -44,6 +44,7 @@
 
 import tornadows.xmltypes
 import xml.dom.minidom
+import inspect
 	
 class Property:
 	""" Class base for definition of properties of the attributes of a python class """
@@ -241,7 +242,11 @@ class ComplexType(object):
 				continue
 			if isinstance(element,Property):
 				xsd += element.type.createElement(str(key))
-			elif isinstance(element,ComplexType) or issubclass(element,ComplexType):
+			elif isinstance(element,ComplexType): 
+				nameinstance = key
+				complextype.append(element._generateXSD())
+				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
+			elif inspect.isclass(element) and issubclass(element,ComplexType): 
 				nameinstance = key
 				complextype.append(element._generateXSD())
 				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
