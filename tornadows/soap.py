@@ -21,7 +21,7 @@ import xml.dom.minidom
 class SoapMessage:
 	""" Implementation of a envelope soap 1.1 with minidom API
 
-	        import tornadows.soap
+		import tornadows.soap
 		import xml.dom.minidom
 
 		soapenvelope = tornadows.soap.SoapMessage()
@@ -33,8 +33,13 @@ class SoapMessage:
 	"""
 	def __init__(self):
 		self._soap = xml.dom.minidom.Document()
-		self._envelope = self._soap.createElementNS('http://schemas.xmlsoap.org/soap/envelope/','soapenv:Envelope')
-		self._envelope.setAttribute('xmlns:soapenv','http://schemas.xmlsoap.org/soap/envelope/')
+		envurl = 'http://schemas.xmlsoap.org/soap/envelope/'
+		self._envelope = self._soap.createElementNS(envurl, 'soapenv:Envelope')
+		self._envelope.setAttribute('xmlns:soapenv', envurl)
+		self._envelope.setAttribute('xmlns:xsi',
+				"http://www.w3.org/2001/XMLSchema-instance")
+		self._envelope.setAttribute('xsi:schemaLocation',
+				' '.join((envurl, envurl)))
 		self._soap.appendChild(self._envelope)
 		self._header = self._soap.createElement('soapenv:Header')
 		self._body   = self._soap.createElement('soapenv:Body')
