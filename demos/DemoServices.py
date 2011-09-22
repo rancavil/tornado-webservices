@@ -29,7 +29,7 @@ class EchoService(soaphandler.SoapHandler):
 
 class EchoTargetnsService(soaphandler.SoapHandler):
 	""" Service to test the use of an overrided target namespace address """
-	targetns_address = '192.168.0.102'
+	targetns_address = '127.0.0.2'
 	@webservice(_params=xmltypes.String, _returns=xmltypes.String)
   	def echo(self, message):
 		return 'Echo say : %s' % message
