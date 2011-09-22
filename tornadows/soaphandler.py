@@ -93,12 +93,14 @@ def soapfault(faultstring):
 class SoapHandler(tornado.web.RequestHandler):
 	""" This subclass extends tornado.web.RequestHandler class, defining the 
 	    methods get() and post() for handle a soap message (request and response).
-	 """
+	"""
 	def get(self):
 		""" Method get() returned the WSDL. If wsdl_path is null, the
 		    WSDL is generated dinamically.
 		"""
-		address = tornado.httpserver.socket.gethostbyname(tornado.httpserver.socket.gethostname())
+		address = getattr(self, 'targetns_address',
+			tornado.httpserver.socket.gethostbyname(
+				tornado.httpserver.socket.gethostname()))
 		port = self.request.headers['Host'].split(':')[1]
 		wsdl_nameservice = self.request.uri.replace('/','').replace('?wsdl','').replace('?WSDL','')
 		wsdl_input       = None
