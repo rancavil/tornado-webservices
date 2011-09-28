@@ -195,4 +195,4 @@ class Boolean(PrimitiveType):
 		return 'boolean'
 	@classmethod
 	def genType(self,v):
-		return str(v)
+		return str(v).lower()
