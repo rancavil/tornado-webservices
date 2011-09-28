@@ -209,7 +209,7 @@ class ComplexType(object):
 			elif isinstance(element,ComplexType):
 				xml += element.toXML(name=key)
 			else:
-				xml += b'<%s>%s</%s>'%(key,element,key)
+				xml += b'<%s>%s</%s>'%(key,convert(type(element).__name__,element),key)
 		xml += b'</%s>'%nameroot
 		return xml
 					
@@ -462,13 +462,13 @@ def findElementFromDict(dictionary,key):
 
 def convert(typeelement,value):
 	""" Function that converts a value depending his type """
-	if typeelement == 'xsd:integer':	
+	if typeelement == 'xsd:integer' or typeelement == 'int':	
 		return int(value)
 	elif typeelement == 'xsd:decimal':
 		return float(value)
 	elif typeelement == 'xsd:double':
 		return float(value)
-	elif typeelement == 'xsd:float':
+	elif typeelement == 'xsd:float' or typeelement == 'float':
 		return float(value)
 	elif typeelement == 'xsd:duration':
 		return str(value)
@@ -478,10 +478,10 @@ def convert(typeelement,value):
 		return str(value)
 	elif typeelement == 'xsd:datetime':
 		return str(value)
-	elif typeelement == 'xsd:string':
+	elif typeelement == 'xsd:string' or typeelement == 'str':
 		return str(value)
-	elif typeelement == 'xsd:boolean':
-		return str(value)
+	elif typeelement == 'xsd:boolean' or typeelement == 'bool':
+		return str(value).lower()
 
 def createPythonType2XMLType(pyType):
 	""" Function that creates a xml type from a python type """
@@ -504,7 +504,7 @@ def createPythonType2XMLType(pyType):
 		xmlType = 'datetime'
 	elif pyType == 'str':
 		xmlType = 'string'
-	elif pyType == 'boolean':
+	elif pyType == 'bool':
 		xmlType = 'boolean'
 		
 	return xmlType
