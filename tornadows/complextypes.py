@@ -45,6 +45,7 @@
 import tornadows.xmltypes
 import xml.dom.minidom
 import inspect
+from datetime import date, datetime, time
 	
 class Property:
 	""" Class base for definition of properties of the attributes of a python class """
@@ -320,11 +321,11 @@ class ComplexType(object):
 			elif element.__name__ == 'duration':
 				return str
 			elif element.__name__ == 'date':
-				return str
+				return date
 			elif element.__name__ == 'time':
-				return str
-			elif element.__name__ == 'datetime':
-				return str
+				return time
+			elif element.__name__ == 'dateTime':
+				return datetime
 			elif element.__name__ == 'str':
 				return str
 			elif element.__name__ == 'bool':
@@ -354,7 +355,7 @@ def cls2dict(complex):
 
 def xsd2dict(xsd,namespace='xsd'):
 	""" Function that creates a dictionary from a xml schema with the type of element """
-	types = ['xsd:integer','xsd:decimal','xsd:double','xsd:float','xsd:duration','xsd:date','xsd:time','xsd:datetime','xsd:string','xsd:boolean']
+	types = ['xsd:integer','xsd:decimal','xsd:double','xsd:float','xsd:duration','xsd:date','xsd:time','xsd:dateTime','xsd:string','xsd:boolean']
 	dct = {}
 	element = '%s:element'%namespace
 	elems = xsd.getElementsByTagName(element)
@@ -472,12 +473,29 @@ def convert(typeelement,value):
 		return float(value)
 	elif typeelement == 'xsd:duration':
 		return str(value)
-	elif typeelement == 'xsd:date':
-		return str(value)
-	elif typeelement == 'xsd:time':
-		return str(value)
-	elif typeelement == 'xsd:datetime':
-		return str(value)
+	elif typeelement == 'xsd:date' or typeelement == 'date':
+		sdate = str(value).split('-')
+		return date(int(sdate[0]),int(sdate[1]),int(sdate[2]))
+	elif typeelement == 'xsd:time' or typeelement == 'time':
+		stime = str(value).split(':')
+		hour = stime[0]
+		min  = stime[1]
+		seg  = '00'
+		if len(stime) >= 3:
+			seg = stime[2].split('.')[0]
+		return time(int(hour),int(min),int(seg))
+	elif typeelement == 'xsd:dateTime' or typeelement == 'datetime':
+		sdatetime = str(value).replace('T','-').replace(' ','-').replace('+','-').split('-')
+		year  = sdatetime[0]
+		mon   = sdatetime[1]
+		day   = sdatetime[2]
+		stime = sdatetime[3].split(':')
+		hour  = stime[0]
+		min   = stime[1]
+		seg   = '00'
+		if len(stime) >= 3:
+			seg = stime[2].split('.')[0]
+		return datetime(int(year),int(mon),int(day),int(hour),int(min),int(seg)).isoformat('T')
 	elif typeelement == 'xsd:string' or typeelement == 'str':
 		return str(value)
 	elif typeelement == 'xsd:boolean' or typeelement == 'bool':
@@ -501,7 +519,7 @@ def createPythonType2XMLType(pyType):
 	elif pyType == 'time':
 		xmlType = 'time'
 	elif pyType == 'datetime':
-		xmlType = 'datetime'
+		xmlType = 'dateTime'
 	elif pyType == 'str':
 		xmlType = 'string'
 	elif pyType == 'bool':
