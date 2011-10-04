@@ -217,3 +217,29 @@ Running:
       			</ListOfUser>
    		</soapenv:Body>
 	     </soapenv:Envelope>
+
+Running the CertService.py example:
+----------------------------------------
+
+Running:
+
+	$ python CertService.py
+
+	1.- CertService (http://localhost:8080/CertService?wsdl):
+
+	    This web service returns an certificate of birth, this service uses the module datetime 
+	    of python.
+
+	    The service receives an idperson parameter like input request, and returns an xml with
+	    the information of the "certificate":
+
+		<CertificateResponse>
+         		<birthday>1973-12-11</birthday>
+         		<datetimecert>2011-10-04T00:25:55</datetimecert>
+         		<idperson>1</idperson>
+         		<isvalid>true</isvalid>
+         		<nameperson>Steve J</nameperson>
+         		<numcert>1</numcert>
+      		</CertificateResponse>
+
+	    See the code of CertService.py for more details.
