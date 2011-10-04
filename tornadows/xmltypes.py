@@ -12,6 +12,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
+# under the License.
 
 """ 
 	Are incorporated the primitive datatypes defined by XML.
@@ -43,7 +44,7 @@ class Array:
 	    @webservices(_params=xmltypes.Array(xmltypes.Integer),_returns=xmltypes.Integer)
 	    def function(sefl, list_of_elements):
 		for e in list_of_elements:
-			# Do something with the element    
+		# Do something with the element    
         	return len(list_of_elements)
 
 	    xmltypes.Array(xmltype.Integer) generate an xml element into schema definition:
@@ -165,10 +166,10 @@ class DateTime(PrimitiveType):
 	""" 8. XML primitive type : dateTime """
 	@staticmethod
 	def createElement(name,prefix='xsd'):
-		return createElementXML(name,'datetime')
+		return createElementXML(name,'dateTime')
 	@staticmethod
 	def getType(self):
-		return 'datetime'
+		return 'dateTime'
 	@classmethod
 	def genType(self,v):
 		return str(v)
