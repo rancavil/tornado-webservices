@@ -390,14 +390,14 @@ def xml2list(xmldoc,name,types):
 	return lst
 
 def generateOBJ(d,namecls,types):
-	""" Function that creates a Object from a xml document """
+	""" Function that creates a object from a xml document """
 	dct = {}
 	lst = []
 	for a in d:
 		name  = a[0]
 		value = a[1]
 		if isinstance(value,list):
-			o = generateOBJ(value,name)
+			o = generateOBJ(value,name,types)
 			lst.append(o)
 			dct[name] = lst
 		else:
@@ -445,7 +445,7 @@ def createProperty(typ,value):
 	return ct
 
 def genattr(elems):
-	""" Function that generates a list with de nodes child of a xml element  """
+	""" Function that generates a list with the childnodes of a xml element  """
 	d = []
 	for e in elems[0].childNodes:
 		if e.nodeType == e.ELEMENT_NODE:
