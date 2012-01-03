@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-""" Implementation of soaphandler for webservices API 0.9 """
+""" Implementation of soaphandler for webservices API 0.9.3.1 """
 
 import tornado.httpserver
 import tornado.web
