@@ -42,6 +42,17 @@ The example display four separate services.
 You can probe this services with SoapUI or creating a web services client with 
 your favorite programming language.
 
+Running the DemoService2.py example:
+------------------------.-----------
+
+Running:
+
+	$ python DemoServices2.py
+
+The example display the same four separate services of DemoService.py.
+The differences are in the types. Here we used python types (int, str, 
+float, etc.). See the code.
+
 Running the ProducService.py example:
 -------------------------------------
 
@@ -124,13 +135,58 @@ Running the ProducListService.py example:
 -----------------------------------------
 
 Running:
+
 	$ python ProductListService.py
 
 	1.- ProductListService (http://localhost:8080/ProductListService?wsdl):
 
 	    The web service implements an operation to retrieve a list of products.
+	    Python types are used to define the attributes of the class; and python
+	    list to store a set of Product.
+
+	    Input is a class that represents the input parameter (request) for the
+    	    web service:
+
+		idList  : is a int python type.
+
+    	    Product is a class that represents Product data structure.
+
+		id      : Is a int python type. Is the product id
+		name    : Is a str python type. Is the name of product. 
+		price   : Is a float python type. Is the price of product.
+		stock   : Is a int python type. Is the stock of product.
+
+    	    List is a class that represents  the response of the web services.
+
+		idList  : IS a int python type. Is a id for the list.
+		product : Is a python list with a set of product (Product class).
+
+Running the ProducListService2.py example:
+------------------------------------------
+
+Running:
+
+	$ python ProductListService2.py
+
+	1.- ProductListService (http://localhost:8080/ProductListService2?wsdl):
+
+	    The web service implements an operation to retrieve a list of products.
 	    Python types are used to define the attributes of the class; and python 
 	    list to store a set of Product.
+
+	    Product is a class that represents Product data structure.
+
+		id     : Is a int python type. Is the product id
+		name   : Is a str python type. Is the name of product. 
+		price  : Is a float python type. Is the price of product.
+		stock  : Is a int python type. Is the stock of product.
+
+    	    List is a class that represents the response of the web services.
+    	    This is a list of Product.
+
+		product : Is a python list with a set of product (Product class).
+
+	    The operation have not input parameters.
 
 Running the UserRolesService.py example:
 ----------------------------------------
@@ -243,3 +299,66 @@ Running:
       		</CertificateResponse>
 
 	    See the code of CertService.py for more details.
+
+Running the RegisterService.py example:
+----------------------------------------
+
+Running:
+
+	$ python RegisterService.py
+
+	1.- RegisterService (http://localhost:8080/RegisterService?wsdl):
+
+	This example is similar to CertService.py.
+
+	The example uses a RegisterRequest like input to the web service.
+	The operation register() of the web service simulates the service of register.
+	The operation response a RegisterResponse with information of the register.
+
+	See the code of RegisterService.py for more details.
+
+
+Running the CurrentTempService.py example:
+------------------------------------------
+
+Running:
+
+	$ python CurrentTempService.py
+
+	1.- CurrentTempService (http://localhost:8080/CurrentTempService?wsdl):
+
+	This example simulates a service that gives the current temperature (in a unknown location).
+	The operation or method getTemperature() does not receive any parameters.
+	The operation ever return the same temperature (29).
+
+	See the code of CurrentTempService.py for more details.
+
+
+Running the HelloWorldService.py example:
+-----------------------------------------
+
+Running:
+
+	$ python HelloWorldService.py
+
+	1.- HelloWorldService (http://localhost:8080/HelloWorldService?wsdl):
+
+	This service is the classic hello world!!!. The operation sayHello() does not receive any parameters
+	this method just return a string with the classic "Hello World!!!".
+
+	See the code of HelloWorldService.py for more details.
+
+Running the HelloWorldService2.py example:
+------------------------------------------
+
+Running:
+
+	$ python HelloWorldService2.py
+
+	1.- HelloWorldService2 (http://localhost:8080/HelloWorldService2?wsdl):
+
+	This service is the classic hello world. The operation sayHello() does not receive any parameters
+	this method just return a string with the classic hello world in a array or list in python
+	['Hello','World'].
+
+	See the code of HelloWorldService2.py for more details.
