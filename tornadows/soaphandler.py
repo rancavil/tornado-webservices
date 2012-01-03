@@ -63,6 +63,8 @@ def webservice(*params,**kwparams):
 				_outputArray = True
 			elif isinstance(_returns,list) or issubclass(_returns,xmltypes.PrimitiveType) or issubclass(_returns,complextypes.ComplexType):
 				_output = _returns
+			else:
+				_output = _returns
 		def operation(*args,**kwargs):
 			return f(*args,**kwargs)
 
@@ -149,6 +151,7 @@ class SoapHandler(tornado.web.RequestHandler):
 					response = None
 					typesinput = getattr(operation,'_input')
 					args  = getattr(operation,'_args')
+
 					if inspect.isclass(typesinput) and issubclass(typesinput,complextypes.ComplexType):
 						obj = self._parseComplexType(typesinput,self._request.getBody()[0])
 						response = operation(obj)
@@ -217,12 +220,15 @@ class SoapHandler(tornado.web.RequestHandler):
 				namespace = element.namespaceURI
 				if prefix != None and namespace != None:
 					element.setAttribute('xmlns:'+prefix,namespace)
+				else:
+					element.setAttribute('xmlns:xsd',"http://www.w3.org/2001/XMLSchema")
+					element.setAttribute('xmlns:xsi',"http://www.w3.org/2001/XMLSchema-instance")
 				elem_list.append(xml.dom.minidom.parseString(element.toxml()))
 		return elem_list
 
 	def _parseComplexType(self,complex,xmld):
 		""" Private method for generate an instance of class nameclass. """
-		xsdd  = b'<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+		xsdd  = b'<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
 		xsdd += complex.toXSD()
 		xsdd += b'</xsd:schema>'
 		xsd = xml.dom.minidom.parseString(xsdd)
@@ -247,7 +253,11 @@ class SoapHandler(tornado.web.RequestHandler):
 		values = []
 		for e in elems:
 			if e.hasChildNodes and len(e.childNodes) > 0:
-				v = type.genType(e.childNodes[0].nodeValue)
+				v = None
+				if inspect.isclass(type) and (issubclass(type,xmltypes.PrimitiveType) or isinstance(type,xmltypes.Array)):
+					v = type.genType(e.childNodes[0].nodeValue)
+				elif hasattr(type,'__name__') and (not issubclass(type,xmltypes.PrimitiveType) or not isinstance(type,xmltypes.Array)):
+					v = complextypes.convert(type.__name__,e.childNodes[0].nodeValue)
 				values.append(v)
 			else:
 				values.append(None)
@@ -282,7 +292,7 @@ class SoapHandler(tornado.web.RequestHandler):
 			xmlresponse = b'<returns>%s</returns>\n'%str(result)
 	
 		response = xml.dom.minidom.parseString(xmlresponse)
-		
+
 		soapResponse = soap.SoapMessage()
 		soapResponse.setBody(response)
 		return soapResponse

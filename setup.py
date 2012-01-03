@@ -23,7 +23,7 @@ except ImportError:
 
 distutils.core.setup(
 	name='tornadows',
-	version = '0.9.3',
+	version = '0.9.3.1',
 	packages=['tornadows','demos'],
 	author='Innovaser',
 	author_email='rancavil@innovaser.cl',

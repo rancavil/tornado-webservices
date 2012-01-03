@@ -44,7 +44,6 @@ class ListOfUser(complextypes.ComplexType):
 class UserRolesService(soaphandler.SoapHandler):
 	@webservice(_params=xmltypes.Integer,_returns=ListOfUser)
 	def getUsers(self, idlist):
-		
 		user1 = User()
 		user1.username = 'steve'
 		user1.roles = ['ceo','admin']
@@ -58,7 +57,6 @@ class UserRolesService(soaphandler.SoapHandler):
 		listusers.list = [user1, user2]
 
 		return listusers
-		
 	
 if __name__ == '__main__':
 	service = [('UserRolesService',UserRolesService)]
