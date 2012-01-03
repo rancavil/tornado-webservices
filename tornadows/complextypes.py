@@ -385,7 +385,9 @@ def xml2list(xmldoc,name,types):
 			l = xml2list(a.toxml(),str(a.nodeName),types)
 			lst.append((str(a.nodeName),l))
 		else:
-			val = convert(typxml,str(a.childNodes[0].nodeValue))
+			val = None
+			if len(a.childNodes) > 0:
+				val = convert(typxml,str(a.childNodes[0].nodeValue))
 			lst.append((str(a.nodeName),val))
 	return lst
 
