@@ -51,7 +51,10 @@ class Wsdl:
 		elif isinstance(self._elementInput,xmltypes.Array):
 			typeInput  = self._elementNameInput
 			types += self._elementInput.createArray(typeInput)
-		elif isinstance(self._elementInput,list) or issubclass(self._elementInput,xmltypes.PrimitiveType):
+		elif isinstance(self._elementInput,list) or inspect.isclass(self._elementInput) and issubclass(self._elementInput,xmltypes.PrimitiveType):
+			typeInput  = self._elementNameInput
+			types += self._createTypes(typeInput,self._elementInput)
+		else: # In case if _elementNameInput is a datatype of python (str, int, float, datetime, etc.) or None
 			typeInput  = self._elementNameInput
 			types += self._createTypes(typeInput,self._elementInput)
 
@@ -61,7 +64,10 @@ class Wsdl:
 		elif isinstance(self._elementOutput,xmltypes.Array):
 			typeOutput = self._elementNameOutput
 			types += self._elementOutput.createArray(typeOutput)
-		elif isinstance(self._elementOutput,list) or issubclass(self._elementOutput,xmltypes.PrimitiveType):
+		elif isinstance(self._elementOutput,list) or inspect.isclass(self._elementOutput) and issubclass(self._elementOutput,xmltypes.PrimitiveType):
+			typeOutput = self._elementNameOutput
+			types += self._createTypes(typeOutput,self._elementOutput)
+		else: # In case if _elementNameOutput is a datatype of python (str, int, float, datetime, etc.) or None
 			typeOutput = self._elementNameOutput
 			types += self._createTypes(typeOutput,self._elementOutput)
 
@@ -71,7 +77,7 @@ class Wsdl:
 		messages += b'<wsdl:part name="parameters" element="tns:%s"/>\n'%typeInput
 		messages += b'</wsdl:message>\n'
 		messages += b'<wsdl:message name="%sResponse">\n'%self._nameservice
-		messages += b'<wsdl:part name="parameters" element="tns:%s"/>\n'%typeOutput
+		messages += b'<wsdl:part name="returns" element="tns:%s"/>\n'%typeOutput
 		messages += b'</wsdl:message>\n'
 		portType  = b'<wsdl:portType name="%sPortType">\n'%self._nameservice
 		portType += b'<wsdl:operation name="%s">\n'%self._operation
@@ -118,13 +124,18 @@ class Wsdl:
 			elems = b''
 			idx = 1
 			for e in elements:
-				elems += e.createElement('value%s'%idx)+'\n'
+				if hasattr(e,'__name__'):
+					elems += b'<xsd:element name="value%d" type="xsd:%s"/>\n'%(idx,complextypes.createPythonType2XMLType(e.__name__))
+				else:
+					elems += e.createElement('value%s'%idx)+'\n'
 				idx += 1
 			elem += elems+b'</xsd:sequence>\n'
 			elem += b'</xsd:complexType>\n'
 			elem += b'<xsd:element name="%s" type="tns:%sParams"/>\n'%(name,name)
-		elif issubclass(elements,xmltypes.PrimitiveType):
+		elif inspect.isclass(elements) and issubclass(elements,xmltypes.PrimitiveType):
 			elem = elements.createElement(name)+'\n'
+		elif hasattr(elements,'__name__'):
+			elem += b'<xsd:element name="%s" type="xsd:%s"/>\n'%(name,complextypes.createPythonType2XMLType(elements.__name__))
 
 		return elem
 
@@ -139,6 +150,8 @@ class Wsdl:
 					elems += elements[e].createType(e)
 				elif issubclass(elements[e],xmltypes.PrimitiveType):
 					elems += elements[e].createElement(e)+'\n'
+				else:
+					elems += b'<xsd:element name="%s" type="xsd:%s"/>\n'%(e,complextypes.createPythonType2XMLType(elements[e].__name__))
 			elem += elems+b'</xsd:sequence>\n'
 			elem += b'</xsd:complexType>\n'
 			elem += b'<xsd:element name="%s" type="tns:%sTypes"/>\n'%(name,name)
