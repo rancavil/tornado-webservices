@@ -19,6 +19,9 @@
 	Array is defined for the use of array of elements and his respective datatype.
 """
 
+import inspect
+from tornadows import complextypes
+
 def createElementXML(name,type,prefix='xsd'):
 	""" Function used for the creation of xml elements. """
 	return b'<%s:element name="%s" type="%s:%s"/>'%(prefix,name,prefix,type)
@@ -58,12 +61,22 @@ class Array:
 	def __init__(self,type,maxOccurs=None):
 		self._type = type
 		self._n    = maxOccurs
+
 	def createArray(self,name):
-		type = self._type.getType(self._type)
+		type = None
+		if inspect.isclass(self._type) and not issubclass(self._type,PrimitiveType):
+			type = complextypes.createPythonType2XMLType(self._type.__name__)
+		else:
+			type = self._type.getType(self._type)
 		return createArrayXML(name,type,'xsd',self._n)
+
 	def createType(self,name):
 		prefix = 'xsd'
-		type = self._type.getType(self._type)
+		type = None
+		if inspect.isclass(self._type) and not issubclass(self._type,PrimitiveType):
+			type = complextypes.createPythonType2XMLType(self._type.__name__)
+		else:
+			type = self._type.getType(self._type)
 		maxoccurs = self._n
 		complexType = b''
 		if self._n == None:
@@ -71,8 +84,14 @@ class Array:
 		else:
 			complexType += b'<%s:element name="%s" type="%s:%s" maxOccurs="%d"/>\n'%(prefix,name,prefix,type,maxoccurs)
 		return complexType
+
 	def genType(self,v):
-		return self._type.genType(v)
+		value = None
+		if inspect.isclass(self._type) and issubclass(self._type,PrimitiveType):
+			value = self._type.genType(v)
+		elif hasattr(self._type,'__name__'):
+			value = complextypes.convert(self._type.__name__,v)
+		return value
 
 class PrimitiveType:
 	""" Class father for all derived types. """
