@@ -124,12 +124,12 @@ class SoapHandler(tornado.web.RequestHandler):
 		if string.upper(query) == 'WSDL':
 			if wsdl_path == None:
 				wsdlfile = wsdl.Wsdl(nameservice=wsdl_nameservice,
-						     targetNamespace=wsdl_targetns,
-						     arguments=wsdl_args,
-						     elementInput=('params',wsdl_input),
-					    	     elementOutput=('returns',wsdl_output),
-					     	     operation=wsdl_operation,
-					     	     location=wsdl_location)
+						             targetNamespace=wsdl_targetns,
+						             arguments=wsdl_args,
+						             elementInput=('params',wsdl_input),
+					    	         elementOutput=('returns',wsdl_output),
+					     	         operation=wsdl_operation,
+					     	         location=wsdl_location)
 				self.finish(wsdlfile.createWsdl().toxml())
 			else:
 				fd = open(str(wsdl_path),'r')
@@ -184,14 +184,10 @@ class SoapHandler(tornado.web.RequestHandler):
 		xmldoc = xmldoc.replace('\n',' ').replace('\t',' ').replace('\r',' ')
 		document = xml.dom.minidom.parseString(xmldoc)
 		prefix = document.documentElement.prefix
-		header = None
-		body = None
-		if prefix != None:
-			header = document.getElementsByTagName(prefix+':Header')
-			body = document.getElementsByTagName(prefix+':Body')
-		else:
-			header = document.getElementsByTagName('Header')
-			body = document.getElementsByTagName('Body')
+		namespace = document.documentElement.namespaceURI
+		
+		header = self._getElementFromMessage('Header',document)
+		body   = self._getElementFromMessage('Body',document)
 
 		header_elements = self._parseXML(header)
 		body_elements = self._parseXML(body)
@@ -203,6 +199,14 @@ class SoapHandler(tornado.web.RequestHandler):
 			soapMsg.setBody(b)
 
 		return soapMsg
+
+	def _getElementFromMessage(self,name,document):
+		""" Private method to search and return elements from XML """
+		list_of_elements = []
+		for e in document.documentElement.childNodes:
+			if e.nodeType == e.ELEMENT_NODE and e.nodeName.count(name) >= 1:
+				list_of_elements.append(e)
+		return list_of_elements
 
 	def _parseXML(self,elements):
 		""" Private method parse and digest the xml.dom.minidom.Element 
