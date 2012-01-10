@@ -388,6 +388,11 @@ def xml2list(xmldoc,name,types):
 			val = None
 			if len(a.childNodes) > 0:
 				val = convert(typxml,str(a.childNodes[0].nodeValue))
+				# Convert str to bool.
+				if val == 'true':
+					val = True
+				elif val == 'false':
+					val = False
 			lst.append((str(a.nodeName),val))
 	return lst
 
