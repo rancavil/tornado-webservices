@@ -91,6 +91,11 @@ class Array:
 			value = self._type.genType(v)
 		elif hasattr(self._type,'__name__'):
 			value = complextypes.convert(self._type.__name__,v)
+			# Convert str to bool
+			if value == 'true':
+				value = True
+			elif value == 'false':
+				value = False
 		return value
 
 class PrimitiveType:
