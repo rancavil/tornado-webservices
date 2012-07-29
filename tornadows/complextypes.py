@@ -215,18 +215,16 @@ class ComplexType(object):
 		return xml
 					
 	@classmethod
-	def toXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd'):
+	def toXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd',method='', ltype=[]):
 		""" Class method that creates the XSD document for the python class.
 		    Return a string with the xml schema.
 		 """
 		name = cls.__name__
-		xsd  = cls._generateXSD()
-		xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,name,name)
-		
+		xsd  = cls._generateXSD(ltype=ltype)
 		return xsd
 		
 	@classmethod	
-	def _generateXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd'):
+	def _generateXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd', ltype=[]):
 		""" Class method for get the xml schema with the document definition.
 		    Return a string with the xsd document.
 		 """
@@ -235,6 +233,7 @@ class ComplexType(object):
 		xsd  = b'<%s:complexType name="%s" xmlns:%s="%s">'%(namespace,name,namespace,xmlns)
 		xsd += b'<%s:sequence>'%namespace
 		complextype = []
+
 		for key in dir(cls):
 			if default_attr.count(key) > 0:
 				continue
@@ -243,14 +242,23 @@ class ComplexType(object):
 				continue
 			if isinstance(element,Property):
 				xsd += element.type.createElement(str(key))
+			
 			elif isinstance(element,ComplexType): 
 				nameinstance = key
-				complextype.append(element._generateXSD())
-				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
+
+				if ltype.count(self._elementInput.getName()) == 0:
+					ltype.append(self._elementInput.getName())
+					complextype.append(element._generateXSD())
+				
+				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
 			elif inspect.isclass(element) and issubclass(element,ComplexType): 
 				nameinstance = key
-				complextype.append(element._generateXSD())
-				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
+				
+				if ltype.count(element.getName()) == 0:
+					ltype.append(element.getName())
+					complextype.append(element._generateXSD())
+				
+				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
 			elif isinstance(element,ArrayProperty):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
 					complextype.append(element[0]._generateXSD())
@@ -258,9 +266,14 @@ class ComplexType(object):
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
 					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
+			
 			elif isinstance(element,list):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
-					complextype.append(element[0]._generateXSD())
+
+					if ltype.count(element[0].__name__) == 0:
+						ltype.append(element[0].__name__)
+						complextype.append(element[0]._generateXSD())
+					
 					xsd += b'<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
@@ -268,6 +281,7 @@ class ComplexType(object):
 			elif hasattr(element,'__name__'):
 				typeelement = createPythonType2XMLType(element.__name__)
 				xsd += b'<%s:element name="%s" type="%s:%s"/>'%(namespace,str(key),namespace,typeelement)
+
 		xsd += b'</%s:sequence>'%namespace
 		xsd += b'</%s:complexType>'%namespace
 		
@@ -331,11 +345,11 @@ class ComplexType(object):
 			elif element.__name__ == 'bool':
 				return bool
 
-def xml2object(xml,xsd,complex):
+def xml2object(xml,xsd,complex,method=''):
 	""" Function that converts a XML document in a instance of a python class """
 	namecls = complex.getName()
 	types   = xsd2dict(xsd)
-	lst     = xml2list(xml,namecls,types)
+	lst     = xml2list(xml,namecls,types,method=method)
 	tps     = cls2dict(complex)
 	obj     = generateOBJ(lst,namecls,tps)
 	return obj
@@ -357,18 +371,22 @@ def xsd2dict(xsd,namespace='xsd'):
 	""" Function that creates a dictionary from a xml schema with the type of element """
 	types = ['xsd:integer','xsd:decimal','xsd:double','xsd:float','xsd:duration','xsd:date','xsd:time','xsd:dateTime','xsd:string','xsd:boolean']
 	dct = {}
+
 	element = '%s:element'%namespace
 	elems = xsd.getElementsByTagName(element)
 	for e in elems:
 		val = 'complexType'
 		typ = str(e.getAttribute('type'))
+		lst = e.hasAttribute('maxOccurs')
 		if types.count(typ) > 0:
 			val = 'element'
-		dct[str(e.getAttribute('name'))] = (val,typ)
+		dct[str(e.getAttribute('name'))] = (val,typ,lst)
 	return dct
 
-def xml2list(xmldoc,name,types):
+def xml2list(xmldoc,name,types,method=''):
 	""" Function that creates a list from xml documento with a tuple element and value """
+	name = name+method
+	
 	x = xml.dom.minidom.parseString(xmldoc)
 	c = None
 	if x.documentElement.prefix != None:
@@ -381,9 +399,10 @@ def xml2list(xmldoc,name,types):
 		t = types[a.nodeName]
 		typ = t[0]
 		typxml = t[1]
+		isarray = t[2]
 		if typ == 'complexType' or typ == 'list':
 			l = xml2list(a.toxml(),str(a.nodeName),types)
-			lst.append((str(a.nodeName),l))
+			lst.append((str(a.nodeName),l,isarray))
 		else:
 			val = None
 			if len(a.childNodes) > 0:
@@ -393,7 +412,7 @@ def xml2list(xmldoc,name,types):
 					val = True
 				elif val == 'false':
 					val = False
-			lst.append((str(a.nodeName),val))
+			lst.append((str(a.nodeName),val,isarray))
 	return lst
 
 def generateOBJ(d,namecls,types):
@@ -403,10 +422,14 @@ def generateOBJ(d,namecls,types):
 	for a in d:
 		name  = a[0]
 		value = a[1]
+		isarray = a[2]
 		if isinstance(value,list):
 			o = generateOBJ(value,name,types)
-			lst.append(o)
-			dct[name] = lst
+			if isarray:
+				lst.append(o)
+				dct[name] = lst
+			else:
+				dct[name] = o
 		else:
 			typ = findElementFromDict(types,name)
 			if isinstance(typ,Property):

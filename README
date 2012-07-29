@@ -11,6 +11,8 @@ Prerequisities:
 
 You need to have tornado-1.2.1.tar.gz installed, at least.
 
+The last version of tornadows uses tornado-2.2.
+
 Installation:
 -------------
 To install:

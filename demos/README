@@ -362,3 +362,44 @@ Running:
 	['Hello','World'].
 
 	See the code of HelloWorldService2.py for more details.
+
+Running the MathService.py example (a new feature):
+---------------------------------------------------
+
+Running:
+
+	$ python MathService.py
+
+	1.- MathService (http://localhost:8080/MathService?wsdl):
+
+	This service displays four math operations in a single service (python class): 
+	addition (add), subtraction (sub), multiplication (mult) and division (div).
+
+	See the code of MathService.py for more details.
+
+	2.- This example made use of a new feature of the API, allow multiple operations
+	    on the service, throught the use of @webservice decorator.
+
+Running the RepositoryService.py example (a new feature):
+---------------------------------------------------------
+
+Running:
+
+	$ python RepositoryService.py
+
+	1.- RepositoryService (http://localhost:8080/RepositoryService?wsdl):
+
+	This service display two operations to save a document in a repository and
+	find a document from the same repository.
+
+	See the code of RepositoryService.py for more details.
+
+	2.- The service uses the ComplexTypes to define the documents stored in the
+	    repository.
+
+	    We define two subclass of ComplexTypes:
+
+	    - Document class represents a document.
+	    - Message class defines message and transports documents.
+
+	    To store the documents, the service uses python dictionaries.

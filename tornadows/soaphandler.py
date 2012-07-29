@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-""" Implementation of soaphandler for webservices API 0.9.3.1 """
+""" Implementation of soaphandler for webservices API 0.9.4.2 (Beta) """
 
 import tornado.httpserver
 import tornado.web
@@ -76,6 +76,7 @@ def webservice(*params,**kwparams):
 		operation._operation = f.func_name
 		operation._inputArray = _inputArray
 		operation._outputArray = _outputArray
+		
 		return operation
 	return method
 
@@ -107,17 +108,20 @@ class SoapHandler(tornado.web.RequestHandler):
 		wsdl_output      = None
 		wsdl_operation   = None
 		wsdl_args        = None
+		wsdl_methods     = []
 
 		for operations in dir(self):
 			operation = getattr(self,operations)
 			if callable(operation) and hasattr(operation,'_input') and hasattr(operation,'_output') and hasattr(operation,'_operation') \
-					       and hasattr(operation,'_args'):
+			   and hasattr(operation,'_args') and hasattr(operation,'_is_operation'):
 				wsdl_input     = getattr(operation,'_input')
 				wsdl_output    = getattr(operation,'_output')
 				wsdl_operation = getattr(operation,'_operation')
 				wsdl_args      = getattr(operation,'_args')
+				wsdl_data      = {'args':wsdl_args,'input':('params',wsdl_input),'output':('returns',wsdl_output),'operation':wsdl_operation}
+				wsdl_methods.append(wsdl_data)
 
-		wsdl_targetns = 'http://%s:%s/%s/%s'%(address,port,wsdl_nameservice,wsdl_operation)
+		wsdl_targetns = 'http://%s:%s/%s'%(address,port,wsdl_nameservice)
 		wsdl_location = 'http://%s:%s/%s'%(address,port,wsdl_nameservice)
 		query = self.request.query
 		self.set_header('Content-Type','application/xml; charset=UTF-8')
@@ -125,11 +129,9 @@ class SoapHandler(tornado.web.RequestHandler):
 			if wsdl_path == None:
 				wsdlfile = wsdl.Wsdl(nameservice=wsdl_nameservice,
 						             targetNamespace=wsdl_targetns,
-						             arguments=wsdl_args,
-						             elementInput=('params',wsdl_input),
-					    	         elementOutput=('returns',wsdl_output),
-					     	         operation=wsdl_operation,
-					     	         location=wsdl_location)
+						             methods=wsdl_methods,
+						             location=wsdl_location)
+
 				self.finish(wsdlfile.createWsdl().toxml())
 			else:
 				fd = open(str(wsdl_path),'r')
@@ -143,39 +145,64 @@ class SoapHandler(tornado.web.RequestHandler):
 		""" Method post() to process of requests and responses SOAP messages """
 		try:
 			self._request = self._parseSoap(self.request.body)
+			soapaction = self.request.headers['SOAPAction'].replace('"','')
 			self.set_header('Content-Type','text/xml')
 			for operations in dir(self):
 				operation = getattr(self,operations)
+				method = ''
 				if callable(operation) and hasattr(operation,'_is_operation'):
-					params = []
-					response = None
-					typesinput = getattr(operation,'_input')
-					args  = getattr(operation,'_args')
-
-					if inspect.isclass(typesinput) and issubclass(typesinput,complextypes.ComplexType):
-						obj = self._parseComplexType(typesinput,self._request.getBody()[0])
-						response = operation(obj)
-					elif hasattr(operation,'_inputArray') and getattr(operation,'_inputArray'):
-						params = self._parseParams(self._request.getBody()[0],typesinput,args)
-						response = operation(params)
-					else:
-						params = self._parseParams(self._request.getBody()[0],typesinput,args)
-						response = operation(*params)
-					is_array = None
-					if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
-						is_array = getattr(operation,'_outputArray')
-				
-					typesoutput = getattr(operation,'_output')
-					if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
-						self._response = self._createReturnsComplexType(response)
-					else:
-						self._response = self._createReturns(response,is_array)
+					num_methods = self._countOperations()
+					if hasattr(operation,'_operation') and soapaction.endswith(getattr(operation,'_operation')) and num_methods > 1:
+						method = getattr(operation,'_operation') 
+						self._response = self._executeOperation(operation,method=method)
+						break
+					elif num_methods == 1:
+						self._response = self._executeOperation(operation,method='')
+						break
 
 			soapmsg = self._response.getSoap().toxml()
 			self.write(soapmsg)
 		except Exception as detail:
 			fault = soapfault('Error in web service : %s'%detail)
 			self.write(fault.getSoap().toxml())
+
+	def _countOperations(self):
+		""" Private method that counts the operations on the web services """
+		c = 0
+		for operations in dir(self):
+			operation = getattr(self,operations)
+			if callable(operation) and hasattr(operation,'_is_operation'):
+				c += 1	
+		return c
+
+	def _executeOperation(self,operation,method=''):
+		""" Private method that executes operations of web service """
+		params = []
+		response = None
+		res = None
+		typesinput = getattr(operation,'_input')
+		args  = getattr(operation,'_args')
+
+		if inspect.isclass(typesinput) and issubclass(typesinput,complextypes.ComplexType):
+			obj = self._parseComplexType(typesinput,self._request.getBody()[0],method=method)
+			response = operation(obj)
+		elif hasattr(operation,'_inputArray') and getattr(operation,'_inputArray'):
+			params = self._parseParams(self._request.getBody()[0],typesinput,args)
+			response = operation(params)
+		else:
+			params = self._parseParams(self._request.getBody()[0],typesinput,args)
+			response = operation(*params)
+		is_array = None
+		if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
+			is_array = getattr(operation,'_outputArray')
+				
+		typesoutput = getattr(operation,'_output')
+		if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
+			res = self._createReturnsComplexType(response)
+		else:
+			res = self._createReturns(response,is_array)
+	
+		return res
 
 	def _parseSoap(self,xmldoc):
 		""" Private method parse a message soap from a xmldoc like string
@@ -197,7 +224,6 @@ class SoapHandler(tornado.web.RequestHandler):
 			soapMsg.setHeader(h)
 		for b in body_elements:
 			soapMsg.setBody(b)
-
 		return soapMsg
 
 	def _getElementFromMessage(self,name,document):
@@ -230,13 +256,13 @@ class SoapHandler(tornado.web.RequestHandler):
 				elem_list.append(xml.dom.minidom.parseString(element.toxml()))
 		return elem_list
 
-	def _parseComplexType(self,complex,xmld):
+	def _parseComplexType(self,complex,xmld,method=''):
 		""" Private method for generate an instance of class nameclass. """
 		xsdd  = b'<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-		xsdd += complex.toXSD()
+		xsdd += complex.toXSD(method=method,ltype=[])
 		xsdd += b'</xsd:schema>'
 		xsd = xml.dom.minidom.parseString(xsdd)
-		obj = complextypes.xml2object(xmld.toxml(),xsd,complex)
+		obj = complextypes.xml2object(xmld.toxml(),xsd,complex,method=method)
 
 		return obj
 	
