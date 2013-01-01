@@ -102,7 +102,9 @@ class SoapHandler(tornado.web.RequestHandler):
 		    WSDL is generated dinamically.
 		"""
 		address = getattr(self, 'targetns_address',tornado.httpserver.socket.gethostbyname(tornado.httpserver.socket.gethostname()))
-		port = self.request.headers['Host'].split(':')[1]
+		port = 80 # if you are using the port 80
+		if len(self.request.headers['Host'].split(':')) >= 2:
+			port = self.request.headers['Host'].split(':')[1]
 		wsdl_nameservice = self.request.uri.replace('/','').replace('?wsdl','').replace('?WSDL','')
 		wsdl_input       = None
 		wsdl_output      = None
