@@ -212,7 +212,7 @@ class ComplexType(object):
 			else:
 				xml += b'<%s>%s</%s>'%(key,convert(type(element).__name__,element),key)
 		xml += b'</%s>'%nameroot
-		return xml
+		return xml.encode('utf-8')
 					
 	@classmethod
 	def toXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd',method='', ltype=[]):
@@ -502,12 +502,12 @@ def convert(typeelement,value):
 	elif typeelement == 'xsd:float' or typeelement == 'float':
 		return float(value)
 	elif typeelement == 'xsd:duration':
-		return str(value)
+		return unicode(value)
 	elif typeelement == 'xsd:date' or typeelement == 'date':
-		sdate = str(value).split('-')
+		sdate = unicode(value).split('-')
 		return date(int(sdate[0]),int(sdate[1]),int(sdate[2]))
 	elif typeelement == 'xsd:time' or typeelement == 'time':
-		stime = str(value).split(':')
+		stime = unicode(value).split(':')
 		hour = stime[0]
 		min  = stime[1]
 		seg  = '00'
@@ -526,10 +526,10 @@ def convert(typeelement,value):
 		if len(stime) >= 3:
 			seg = stime[2].split('.')[0]
 		return datetime(int(year),int(mon),int(day),int(hour),int(min),int(seg)).isoformat('T')
-	elif typeelement == 'xsd:string' or typeelement == 'str':
-		return str(value)
+	elif typeelement == 'xsd:string' or typeelement == 'str' or typeelement == 'unicode':
+		return unicode(value)
 	elif typeelement == 'xsd:boolean' or typeelement == 'bool':
-		return str(value).lower()
+		return unicode(value).lower()
 
 def createPythonType2XMLType(pyType):
 	""" Function that creates a xml type from a python type """
