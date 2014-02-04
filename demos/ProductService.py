@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 #
 # Copyright 2011 Rodrigo Ancavil del Pino
 #
@@ -72,6 +73,7 @@ class ProductService(soaphandler.SoapHandler):
 		      4:('PENCIL RED',0.50,600),
 		      5:('PENCIL WHITE',0.50,900),
 		      6:('HEADPHONES',15.7,500),
+		      7:(u'Japanses Noodles (ラーメン)',1.1,500),
 		     }
 		row = (None,0.0,0)
 		try:
