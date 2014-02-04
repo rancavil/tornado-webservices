@@ -42,6 +42,14 @@ The example display four separate services.
 You can probe this services with SoapUI or creating a web services client with 
 your favorite programming language.
 
+Running the DemoServiceHostname.py example:
+-------------------------------------------
+
+	The results are the same as above showed, except that in this demo you can
+	set the hostname to be answered in the WSDL. It's useful when you need to 
+	run the services in distributed servers architecture. It's gonna be useful
+	operating in a round-robin or reverse proxy configuration.
+
 Running the DemoService2.py example:
 ------------------------.-----------
 

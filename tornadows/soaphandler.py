@@ -21,6 +21,7 @@ import tornado.web
 import xml.dom.minidom
 import string
 import inspect
+from tornado.options import options
 from tornadows import soap
 from tornadows import xmltypes
 from tornadows import complextypes
@@ -101,7 +102,11 @@ class SoapHandler(tornado.web.RequestHandler):
 		""" Method get() returned the WSDL. If wsdl_path is null, the
 		    WSDL is generated dinamically.
 		"""
-		address = getattr(self, 'targetns_address',tornado.httpserver.socket.gethostbyname(tornado.httpserver.socket.gethostname()))
+		if type(options.wsdl_hostname) is str:
+			address = options.wsdl_hostname
+		else:
+			address = getattr(self, 'targetns_address',tornado.httpserver.socket.gethostbyname(tornado.httpserver.socket.gethostname()))
+		
 		port = 80 # if you are using the port 80
 		if len(self.request.headers['Host'].split(':')) >= 2:
 			port = self.request.headers['Host'].split(':')[1]
