@@ -27,4 +27,5 @@ distutils.core.setup(
 	packages=['tornadows','demos'],
 	author='Innovaser',
 	author_email='rancavil@innovaser.cl',
+        install_requires=['tornado',],
 )
