@@ -51,7 +51,7 @@ run the services in distributed servers architecture. It's gonna be useful
 operating in a round-robin or reverse proxy configuration.
 
 Running the DemoService2.py example:
-------------------------.-----------
+------------------------------------
 
 Running:
 
@@ -81,7 +81,7 @@ For example:
           id    = complextypes.IntegerPropert()
           name  = complextypes.StringProperty()
           price = complextypes.FloatProperty()
-	  stock = complextypes.IntegerProperty()
+          stock = complextypes.IntegerProperty()
 
 The class is tranformed into the following xml schema.
 
@@ -167,7 +167,7 @@ Product is a class that represents Product data structure.
 List is a class that represents  the response of the web services.
 
      idList  : IS a int python type. Is a id for the list.
-               product : Is a python list with a set of product (Product class).
+     product : Is a python list with a set of product (Product class).
 
 Running the ProducListService2.py example:
 ------------------------------------------
@@ -231,21 +231,22 @@ The classes are tranformed into the following xml schema.
                      <xsd:element name="idlist" type="xsd:integer"/>
                </xsd:sequence>
           </xsd:complexType>
-	  <xsd:element name="params" type="tns:paramsTypes"/>
-               <xsd:complexType name="ListOfUser">
-	            <xsd:sequence>
-                         <xsd:element name="idlist" type="xsd:integer"/>
-                         <xsd:element maxOccurs="unbounded" name="list" type="tns:User"/>
-                    </xsd:sequence>
-               </xsd:complexType>
+          <xsd:element name="params" type="tns:paramsTypes"/>
+          <xsd:complexType name="ListOfUser">
+	       <xsd:sequence>
+                    <xsd:element name="idlist" type="xsd:integer"/>
+                    <xsd:element maxOccurs="unbounded" name="list" type="tns:User"/>
+               </xsd:sequence>
+          </xsd:complexType>
 
-               <xsd:complexType name="User">
-                    <xsd:sequence>
-                         <xsd:element maxOccurs="unbounded" name="roles" type="xsd:string"/>
-                         <xsd:element name="username" type="xsd:string"/>
-                    </xsd:sequence>
-               </xsd:complexType>
-               <xsd:element name="ListOfUser" type="tns:ListOfUser"/>
+          <xsd:complexType name="User">
+               <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" name="roles" type="xsd:string"/>
+                    <xsd:element name="username" type="xsd:string"/>
+               </xsd:sequence>
+          </xsd:complexType>
+
+          <xsd:element name="ListOfUser" type="tns:ListOfUser"/>
      </xsd:schema>
 	
 Python lists are represented like xml elements with the maxOccurs attribute unbounded.	
