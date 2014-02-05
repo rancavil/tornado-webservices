@@ -102,7 +102,7 @@ class SoapHandler(tornado.web.RequestHandler):
 		""" Method get() returned the WSDL. If wsdl_path is null, the
 		    WSDL is generated dinamically.
 		"""
-		if type(options.wsdl_hostname) is str:
+		if hasattr(options,'wsdl_hostname') and type(options.wsdl_hostname) is str:
 			address = options.wsdl_hostname
 		else:
 			address = getattr(self, 'targetns_address',tornado.httpserver.socket.gethostbyname(tornado.httpserver.socket.gethostname()))
