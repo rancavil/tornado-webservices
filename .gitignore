@@ -7,8 +7,8 @@
 *.egg-info
 .project
 .pydevproject
-/venv/
-/virtenv/
-/dist/
-/build/
-/tornadows.egg-info/
+venv/
+virtenv/
+dist/
+build/
+tornadows.egg-info/
