@@ -19,6 +19,7 @@
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
+import tornado.wsgi
 
 class WebService(tornado.web.Application):
 	""" A implementation of web services for tornado web server.
@@ -69,3 +70,50 @@ class WebService(tornado.web.Application):
 					  (r"/"+str(self._service)+"/",self._object),]
 			tornado.web.Application.__init__(self,self._services)
 
+class WSGIWebService(tornado.wsgi.WSGIApplication):
+	""" A implementation of web services for tornado web server.
+
+		import tornado.httpserver
+		import tornado.ioloop
+		from tornadows import webservices
+		from tornadows import xmltypes
+	   	from tornadows import soaphandler
+		from tornadows.soaphandler import webservice
+		import wsgiref.simple_server
+ 
+		class MyService(soaphandler.SoapHandler):
+			@webservice(_params=[xmltypes.Integer, xmltypes.Integer],_returns=xmltypes.Integer)
+			def sum(self, value1, value2):
+				result = value1 + value2
+	
+				return result  
+
+		if __name__ == "__main__":
+			app = webservices.WSGIWebService("MyService",MyService)
+			server = wsgiref.simple_server.make_server('',8888,app)
+			server.serve_forever()
+	"""
+	def __init__(self,services,object=None,wsdl=None, default_host="", **settings):
+		""" Initializes the application for web services
+
+		    Instances of this class are callable and can be passed to
+		    HTTPServer of tornado to serve the web services.
+
+		    The constructor for this class takes the name for the web 
+		    service (service), the class with the web service (object) 
+		    and wsdl with the wsdl file path (if this exist).
+		 """
+		if isinstance(services,list) and object == None:
+			srvs = []
+			for s in services:
+				srv = s[0]
+				obj = s[1]
+				srvs.append((r"/"+str(srv),obj))
+				srvs.append((r"/"+str(srv)+"/",obj))
+			tornado.wsgi.WSGIApplication.__init__(self,srvs,default_host, **settings)
+		else:
+			self._service = services
+			self._object = object
+			self._services = [(r"/"+str(self._service),self._object),
+					  (r"/"+str(self._service)+"/",self._object),]
+			tornado.wsgi.WSGIApplication.__init__(self,self._services,default_host, **settings)

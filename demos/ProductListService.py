@@ -81,7 +81,7 @@ class ProductListService(soaphandler.SoapHandler):
 	def database(self,id):
 		""" This method simulates a database of products """
 		db = {1:('COMPUTER',1000.5,100),
- 		      2:('MOUSE',10.0,300),
+			  2:('MOUSE',10.0,300),
 		      3:('PENCIL BLUE',0.50,500),
 		      4:('PENCIL RED',0.50,600),
 		      5:('PENCIL WHITE',0.50,900),

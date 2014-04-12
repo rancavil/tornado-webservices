@@ -69,12 +69,12 @@ def webservice(*params,**kwparams):
 		def operation(*args,**kwargs):
 			return f(*args,**kwargs)
 
-		operation.func_name = f.func_name
+		operation.__name__ = f.__name__
 		operation._is_operation = True
 		operation._args = _args
 		operation._input = _input
 		operation._output = _output
-		operation._operation = f.func_name
+		operation._operation = f.__name__
 		operation._inputArray = _inputArray
 		operation._outputArray = _outputArray
 		
@@ -87,10 +87,10 @@ def soapfault(faultstring):
 	    for Soap Envelope
 	 """
 	fault = soap.SoapMessage()
-	faultmsg  = b'<soapenv:Fault xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope">\n'
-	faultmsg += b'<faultcode></faultcode>\n'
-	faultmsg += b'<faultstring>%s</faultstring>\n'%faultstring
-	faultmsg += b'</soapenv:Fault>\n'
+	faultmsg  = '<soapenv:Fault xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope">\n'
+	faultmsg += '<faultcode></faultcode>\n'
+	faultmsg += '<faultstring>%s</faultstring>\n'%faultstring
+	faultmsg += '</soapenv:Fault>\n'
 	fault.setBody(xml.dom.minidom.parseString(faultmsg))
 	return fault
 
@@ -132,7 +132,7 @@ class SoapHandler(tornado.web.RequestHandler):
 		wsdl_location = 'http://%s:%s/%s'%(address,port,wsdl_nameservice)
 		query = self.request.query
 		self.set_header('Content-Type','application/xml; charset=UTF-8')
-		if string.upper(query) == 'WSDL':
+		if query.upper() == 'WSDL':
 			if wsdl_path == None:
 				wsdlfile = wsdl.Wsdl(nameservice=wsdl_nameservice,
 						             targetNamespace=wsdl_targetns,
@@ -265,9 +265,9 @@ class SoapHandler(tornado.web.RequestHandler):
 
 	def _parseComplexType(self,complex,xmld,method=''):
 		""" Private method for generate an instance of class nameclass. """
-		xsdd  = b'<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+		xsdd  = '<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
 		xsdd += complex.toXSD(method=method,ltype=[])
-		xsdd += b'</xsd:schema>'
+		xsdd += '</xsd:schema>'
 		xsd = xml.dom.minidom.parseString(xsdd)
 		obj = complextypes.xml2object(xmld.toxml(),xsd,complex,method=method)
 
@@ -314,19 +314,19 @@ class SoapHandler(tornado.web.RequestHandler):
 		""" Private method to generate the xml document with the response. 
 		    Return an SoapMessage().
 		"""
-		xmlresponse = b''
+		xmlresponse = ''
 		if isinstance(result,list):
-			xmlresponse = b'<returns>\n'
+			xmlresponse = '<returns>\n'
 			i = 1
 			for r in result:
 				if is_array == True:
-					xmlresponse += b'<value>%s</value>\n'%str(r)
+					xmlresponse += '<value>%s</value>\n'%str(r)
 				else:
-					xmlresponse += b'<value%d>%s</value%d>\n'%(i,str(r),i)
+					xmlresponse += '<value%d>%s</value%d>\n'%(i,str(r),i)
 				i+=1
-			xmlresponse += b'</returns>\n'
+			xmlresponse += '</returns>\n'
 		else:
-			xmlresponse = b'<returns>%s</returns>\n'%str(result)
+			xmlresponse = '<returns>%s</returns>\n'%str(result)
 	
 		response = xml.dom.minidom.parseString(xmlresponse)
 

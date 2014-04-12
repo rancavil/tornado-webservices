@@ -35,8 +35,8 @@ class Wsdl:
 		""" Method that allows create the wsdl file """
 		typeInput  = None
 		typeOutput = None
-		types  = b'<wsdl:types>\n'
-		types += b'<xsd:schema targetNamespace="%s">\n'%self._namespace
+		types  = '<wsdl:types>\n'
+		types += '<xsd:schema targetNamespace="%s">\n'%self._namespace
 
 		namespace = 'xsd'
 		types_list = []
@@ -61,7 +61,7 @@ class Wsdl:
 					ltype.append(self._elementInput.getName())
 					types += self._elementInput.toXSD(method=method,ltype=ltype)
 					
-				types += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,typeInput,self._elementInput.getName())
+				types += '<%s:element name="%s" type="tns:%s"/>'%(namespace,typeInput,self._elementInput.getName())
 
 			elif isinstance(self._elementInput,dict):
 				typeInput = self._elementNameInput+method
@@ -83,7 +83,7 @@ class Wsdl:
 					ltype.append(self._elementOutput.getName())
 					types += self._elementOutput.toXSD(method=method,ltype=ltype)
 
-				types += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,typeOutput,self._elementOutput.getName())
+				types += '<%s:element name="%s" type="tns:%s"/>'%(namespace,typeOutput,self._elementOutput.getName())
 
 			elif isinstance(self._elementOutput,xmltypes.Array):
 				typeOutput = self._elementNameOutput+method
@@ -97,10 +97,10 @@ class Wsdl:
 
 			types_list.append({'typeInput':typeInput,'typeOutput':typeOutput,'method':method})
 
-		types += b'</xsd:schema>\n'
-		types += b'</wsdl:types>\n'
+		types += '</xsd:schema>\n'
+		types += '</wsdl:types>\n'
 		
-		messages = b''
+		messages = ''
 		
 		for t in types_list:
 			typeInput = t['typeInput']
@@ -110,15 +110,15 @@ class Wsdl:
 			if len(types_list) == 1:
 				method = ''
 
-			messages += b'<wsdl:message name="%sRequest%s">\n'%(self._nameservice,method)
-			messages += b'<wsdl:part name="parameters%s" element="tns:%s"/>\n'%(method,typeInput)
-			messages += b'</wsdl:message>\n'
+			messages += '<wsdl:message name="%sRequest%s">\n'%(self._nameservice,method)
+			messages += '<wsdl:part name="parameters%s" element="tns:%s"/>\n'%(method,typeInput)
+			messages += '</wsdl:message>\n'
 
-			messages += b'<wsdl:message name="%sResponse%s">\n'%(self._nameservice,method)
-			messages += b'<wsdl:part name="returns%s" element="tns:%s"/>\n'%(method,typeOutput)
-			messages += b'</wsdl:message>\n'
+			messages += '<wsdl:message name="%sResponse%s">\n'%(self._nameservice,method)
+			messages += '<wsdl:part name="returns%s" element="tns:%s"/>\n'%(method,typeOutput)
+			messages += '</wsdl:message>\n'
 
-		portType  = b'<wsdl:portType name="%sPortType">\n'%self._nameservice
+		portType  = '<wsdl:portType name="%sPortType">\n'%self._nameservice
 		
 		for wsdl_data in self._methods:
 			self._operation = wsdl_data['operation']
@@ -127,91 +127,91 @@ class Wsdl:
 			if len(self._methods) == 1:
 				method = ''
 
-			portType += b'<wsdl:operation name="%s">\n'%self._operation
-			portType += b'<wsdl:input message="tns:%sRequest%s"/>\n'%(self._nameservice,method)
-			portType += b'<wsdl:output message="tns:%sResponse%s"/>\n'%(self._nameservice,method)
-			portType += b'</wsdl:operation>\n'
+			portType += '<wsdl:operation name="%s">\n'%self._operation
+			portType += '<wsdl:input message="tns:%sRequest%s"/>\n'%(self._nameservice,method)
+			portType += '<wsdl:output message="tns:%sResponse%s"/>\n'%(self._nameservice,method)
+			portType += '</wsdl:operation>\n'
 		
-		portType += b'</wsdl:portType>\n'
+		portType += '</wsdl:portType>\n'
 
-		binding  = b'<wsdl:binding name="%sBinding" type="tns:%sPortType">\n'%(self._nameservice,self._nameservice)
-		binding += b'<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>\n'
+		binding  = '<wsdl:binding name="%sBinding" type="tns:%sPortType">\n'%(self._nameservice,self._nameservice)
+		binding += '<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>\n'
 
 		for wsdl_data in self._methods:
 			self._operation = wsdl_data['operation']
 
-			binding += b'<wsdl:operation name="%s">\n'%self._operation		
-			binding += b'<soap:operation soapAction="%s/%s" style="document"/>\n'%(self._location,self._operation)
-			binding += b'<wsdl:input><soap:body use="literal"/></wsdl:input>\n'
-			binding += b'<wsdl:output><soap:body use="literal"/></wsdl:output>\n'
-			binding += b'</wsdl:operation>\n'
+			binding += '<wsdl:operation name="%s">\n'%self._operation		
+			binding += '<soap:operation soapAction="%s/%s" style="document"/>\n'%(self._location,self._operation)
+			binding += '<wsdl:input><soap:body use="literal"/></wsdl:input>\n'
+			binding += '<wsdl:output><soap:body use="literal"/></wsdl:output>\n'
+			binding += '</wsdl:operation>\n'
 
-		binding += b'</wsdl:binding>\n'
+		binding += '</wsdl:binding>\n'
 		
-		service  = b'<wsdl:service name="%s">\n'%self._nameservice
-		service += b'<wsdl:port name="%sPort" binding="tns:%sBinding">\n'%(self._nameservice,self._nameservice)
-		service += b'<soap:address location="%s"/>\n'%self._location
-		service += b'</wsdl:port>\n'
-		service += b'</wsdl:service>\n'
+		service  = '<wsdl:service name="%s">\n'%self._nameservice
+		service += '<wsdl:port name="%sPort" binding="tns:%sBinding">\n'%(self._nameservice,self._nameservice)
+		service += '<soap:address location="%s"/>\n'%self._location
+		service += '</wsdl:port>\n'
+		service += '</wsdl:service>\n'
 
-		definitions  = b'<wsdl:definitions name="%s"\n'%self._nameservice
-		definitions  += b'xmlns:xsd="http://www.w3.org/2001/XMLSchema"\n'
-		definitions  += b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n'
-		definitions  += b'xmlns:tns="%s"\n'%self._namespace
-		definitions  += b'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"\n'
-		definitions  += b'xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"\n'
-		definitions  += b'targetNamespace="%s">\n'%self._namespace
+		definitions  = '<wsdl:definitions name="%s"\n'%self._nameservice
+		definitions  += 'xmlns:xsd="http://www.w3.org/2001/XMLSchema"\n'
+		definitions  += 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n'
+		definitions  += 'xmlns:tns="%s"\n'%self._namespace
+		definitions  += 'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"\n'
+		definitions  += 'xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"\n'
+		definitions  += 'targetNamespace="%s">\n'%self._namespace
 		definitions += types
 		definitions += messages
 		definitions += portType
 		definitions += binding
 		definitions += service
-		definitions += b'</wsdl:definitions>\n'
+		definitions += '</wsdl:definitions>\n'
 		wsdlXml = xml.dom.minidom.parseString(definitions)
 
 		return wsdlXml
 
 	def _createTypes(self, name, elements):
 		""" Private method that creates the types for the elements of wsdl """
-		elem = b''
+		elem = ''
 		if isinstance(elements,list):
-			elem = b'<xsd:complexType name="%sParams">\n'%name
-			elem += b'<xsd:sequence>\n'
-			elems = b''
+			elem = '<xsd:complexType name="%sParams">\n'%name
+			elem += '<xsd:sequence>\n'
+			elems = ''
 			idx = 1
 			for e in elements:
 				if hasattr(e,'__name__'):
-					elems += b'<xsd:element name="value%d" type="xsd:%s"/>\n'%(idx,complextypes.createPythonType2XMLType(e.__name__))
+					elems += '<xsd:element name="value%d" type="xsd:%s"/>\n'%(idx,complextypes.createPythonType2XMLType(e.__name__))
 				else:
 					elems += e.createElement('value%s'%idx)+'\n'
 				idx += 1
-			elem += elems+b'</xsd:sequence>\n'
-			elem += b'</xsd:complexType>\n'
-			elem += b'<xsd:element name="%s" type="tns:%sParams"/>\n'%(name,name)
+			elem += elems+'</xsd:sequence>\n'
+			elem += '</xsd:complexType>\n'
+			elem += '<xsd:element name="%s" type="tns:%sParams"/>\n'%(name,name)
 		elif inspect.isclass(elements) and issubclass(elements,xmltypes.PrimitiveType):
 			elem = elements.createElement(name)+'\n'
 		elif hasattr(elements,'__name__'):
-			elem += b'<xsd:element name="%s" type="xsd:%s"/>\n'%(name,complextypes.createPythonType2XMLType(elements.__name__))
+			elem += '<xsd:element name="%s" type="xsd:%s"/>\n'%(name,complextypes.createPythonType2XMLType(elements.__name__))
 
 		return elem
 
 	def _createComplexTypes(self, name, arguments, elements):
 		""" Private method that creates complex types for wsdl """
-		elem = b''
+		elem = ''
 		if isinstance(elements,dict):
-			elem = b'<xsd:complexType name="%sTypes">\n'%name
-			elem += b'<xsd:sequence>\n'
-			elems = b''
+			elem = '<xsd:complexType name="%sTypes">\n'%name
+			elem += '<xsd:sequence>\n'
+			elems = ''
 			for e in arguments:
 				if  isinstance(elements[e],xmltypes.Array):
 					elems += elements[e].createType(e)
 				elif issubclass(elements[e],xmltypes.PrimitiveType):
 					elems += elements[e].createElement(e)+'\n'
 				else:
-					elems += b'<xsd:element name="%s" type="xsd:%s"/>\n'%(e,complextypes.createPythonType2XMLType(elements[e].__name__))
-			elem += elems+b'</xsd:sequence>\n'
-			elem += b'</xsd:complexType>\n'
-			elem += b'<xsd:element name="%s" type="tns:%sTypes"/>\n'%(name,name)
+					elems += '<xsd:element name="%s" type="xsd:%s"/>\n'%(e,complextypes.createPythonType2XMLType(elements[e].__name__))
+			elem += elems+'</xsd:sequence>\n'
+			elem += '</xsd:complexType>\n'
+			elem += '<xsd:element name="%s" type="tns:%sTypes"/>\n'%(name,name)
 		elif issubclass(elements,xmltypes.PrimitiveType):
 			elem = elements.createElement(name)+'\n'
 

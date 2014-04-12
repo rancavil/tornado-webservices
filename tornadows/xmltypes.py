@@ -24,19 +24,19 @@ from tornadows import complextypes
 
 def createElementXML(name,type,prefix='xsd'):
 	""" Function used for the creation of xml elements. """
-	return b'<%s:element name="%s" type="%s:%s"/>'%(prefix,name,prefix,type)
+	return '<%s:element name="%s" type="%s:%s"/>'%(prefix,name,prefix,type)
 
 def createArrayXML(name,type,prefix='xsd',maxoccurs=None):
 	""" Function used for the creation of xml complexElements """
-	complexType  = b'<%s:complexType name="%sParams">\n'%(prefix,name)
-	complexType += b'<%s:sequence>\n'%prefix
+	complexType  = '<%s:complexType name="%sParams">\n'%(prefix,name)
+	complexType += '<%s:sequence>\n'%prefix
 	if maxoccurs == None:
-		complexType += b'<%s:element name="value" type="%s:%s" maxOccurs="unbounded"/>\n'%(prefix,prefix,type)
+		complexType += '<%s:element name="value" type="%s:%s" maxOccurs="unbounded"/>\n'%(prefix,prefix,type)
 	else:
-		complexType += b'<%s:element name="value" type="%s:%s" maxOccurs="%d"/>\n'%(prefix,prefix,type,maxoccurs)
-	complexType += b'</%s:sequence>\n'%prefix
-	complexType += b'</%s:complexType>\n'%prefix
-	complexType += b'<%s:element name="%s" type="tns:%sParams"/>\n'%(prefix,name,name)
+		complexType += '<%s:element name="value" type="%s:%s" maxOccurs="%d"/>\n'%(prefix,prefix,type,maxoccurs)
+	complexType += '</%s:sequence>\n'%prefix
+	complexType += '</%s:complexType>\n'%prefix
+	complexType += '<%s:element name="%s" type="tns:%sParams"/>\n'%(prefix,name,name)
 	return complexType
 
 class Array:
@@ -78,11 +78,11 @@ class Array:
 		else:
 			type = self._type.getType(self._type)
 		maxoccurs = self._n
-		complexType = b''
+		complexType = ''
 		if self._n == None:
-			complexType += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>\n'%(prefix,name,prefix,type)
+			complexType += '<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>\n'%(prefix,name,prefix,type)
 		else:
-			complexType += b'<%s:element name="%s" type="%s:%s" maxOccurs="%d"/>\n'%(prefix,name,prefix,type,maxoccurs)
+			complexType += '<%s:element name="%s" type="%s:%s" maxOccurs="%d"/>\n'%(prefix,name,prefix,type,maxoccurs)
 		return complexType
 
 	def genType(self,v):

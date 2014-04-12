@@ -24,19 +24,19 @@ from tornadows.soaphandler import webservice
 class EchoService(soaphandler.SoapHandler):
 	""" Echo Service """
 	@webservice(_params=xmltypes.String,_returns=xmltypes.String)
-  	def echo(self, message):
+	def echo(self, message):
 		return 'Echo say : %s' % message
 
 class EchoTargetnsService(soaphandler.SoapHandler):
 	""" Service to test the use of an overrided target namespace address """
 	targetns_address = '192.168.0.103'
 	@webservice(_params=xmltypes.String, _returns=xmltypes.String)
-  	def echo(self, message):
+	def echo(self, message):
 		return 'Echo say : %s' % message
 
 class CountService(soaphandler.SoapHandler):
 	""" Service that counts the number of items in a list """
-   	@webservice(_params=xmltypes.Array(xmltypes.String),_returns=xmltypes.Integer)
+	@webservice(_params=xmltypes.Array(xmltypes.String),_returns=xmltypes.Integer)
 	def count(self, list_of_values):
 		length = len(list_of_values)
 		return length
@@ -60,12 +60,12 @@ class FibonacciService(soaphandler.SoapHandler):
 		return result
 
 if __name__ == '__main__':
-  	service = [('EchoService',EchoService),
+	service = [('EchoService',EchoService),
         	   ('EchoTargetnsService', EchoTargetnsService),
         	   ('CountService',CountService),
              	   ('DivService',DivService),
              	   ('FibonacciService',FibonacciService)]
-  	app = webservices.WebService(service)
-  	ws  = tornado.httpserver.HTTPServer(app)
-  	ws.listen(8080)
-  	tornado.ioloop.IOLoop.instance().start()
+    app = webservices.WebService(service)
+    ws  = tornado.httpserver.HTTPServer(app)
+    ws.listen(8080)
+    tornado.ioloop.IOLoop.instance().start()

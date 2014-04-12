@@ -14,17 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import distutils.core
+from distutils.core import setup
 
 try:
-	import setuptools
+	from setuptools import setup
 except ImportError:
 	pass
 
 
-distutils.core.setup(
+setup(
 	name='tornadows',
-	version = '0.9.4.3',
+	version = '0.9.4.4',
 	packages=['tornadows','demos'],
 	author='Innovaser',
 	author_email='rancavil@innovaser.cl',
