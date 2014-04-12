@@ -23,7 +23,7 @@ except ImportError:
 
 
 setup(
-	name='tornadows',
+	name='tornado-webservices',
 	version = '0.9.4.4',
 	packages=['tornadows','demos'],
 	author='Innovaser',
