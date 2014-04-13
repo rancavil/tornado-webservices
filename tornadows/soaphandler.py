@@ -215,6 +215,7 @@ class SoapHandler(tornado.web.RequestHandler):
 		""" Private method parse a message soap from a xmldoc like string
 		    _parseSoap() return a soap.SoapMessage().
 		"""
+		xmldoc = bytes.decode(xmldoc)
 		xmldoc = xmldoc.replace('\n',' ').replace('\t',' ').replace('\r',' ')
 		document = xml.dom.minidom.parseString(xmldoc)
 		prefix = document.documentElement.prefix
