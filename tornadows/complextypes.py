@@ -124,9 +124,9 @@ class ArrayProperty(list):
 		""" Create xml complex type for ArrayProperty """
 		xsd = self._object.toXSD()
 		if self._maxOccurs == None:
-			xsd += b'<%s:element name="%s" type="tns:%s" minOccurs="%s"/>'%(namespace,nameelement,self._object.getName(),self._minOccurs)
+			xsd += '<%s:element name="%s" type="tns:%s" minOccurs="%s"/>'%(namespace,nameelement,self._object.getName(),self._minOccurs)
 		elif self._maxOccurs != None:
-			xsd += b'<%s:element name="%s" type="tns:%s" minOccurs="%s" maxOccurs="%s"/>'%(namespace,nameelement,self._object.getName(),str(self._minOccurs),str(self._maxOccurs))
+			xsd += '<%s:element name="%s" type="tns:%s" minOccurs="%s" maxOccurs="%s"/>'%(namespace,nameelement,self._object.getName(),str(self._minOccurs),str(self._maxOccurs))
 		return xsd
 
 class ComplexType(object):
@@ -191,7 +191,7 @@ class ComplexType(object):
 		else:
 			nameroot = name
 
-		xml = b'<%s>'%nameroot
+		xml = '<%s>'%nameroot
 		default_attr = dir(type('default',(object,),{}))
 		for key in dir(self):
 			if default_attr.count(key) > 0:
@@ -204,14 +204,14 @@ class ComplexType(object):
 					if isinstance(e,ComplexType):
 						xml += e.toXML(name=key)
 					else:
-						xml += b'<%s>%s</%s>'%(key,e,key)
+						xml += '<%s>%s</%s>'%(key,e,key)
 			elif isinstance(element,Property):
-				xml += b'<%s>%s</%s>'%(key,element.value,key)
+				xml += '<%s>%s</%s>'%(key,element.value,key)
 			elif isinstance(element,ComplexType):
 				xml += element.toXML(name=key)
 			else:
-				xml += b'<%s>%s</%s>'%(key,convert(type(element).__name__,element),key)
-		xml += b'</%s>'%nameroot
+				xml += '<%s>%s</%s>'%(key,convert(type(element).__name__,element),key)
+		xml += '</%s>'%nameroot
 		return xml.encode('utf-8')
 					
 	@classmethod
@@ -230,8 +230,8 @@ class ComplexType(object):
 		 """
 		default_attr = dir(type('default',(object,),{}))
 		name = cls.__name__
-		xsd  = b'<%s:complexType name="%s" xmlns:%s="%s">'%(namespace,name,namespace,xmlns)
-		xsd += b'<%s:sequence>'%namespace
+		xsd  = '<%s:complexType name="%s" xmlns:%s="%s">'%(namespace,name,namespace,xmlns)
+		xsd += '<%s:sequence>'%namespace
 		complextype = []
 
 		for key in dir(cls):
@@ -250,7 +250,7 @@ class ComplexType(object):
 					ltype.append(self._elementInput.getName())
 					complextype.append(element._generateXSD())
 				
-				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
+				xsd += '<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
 			elif inspect.isclass(element) and issubclass(element,ComplexType): 
 				nameinstance = key
 				
@@ -258,14 +258,14 @@ class ComplexType(object):
 					ltype.append(element.getName())
 					complextype.append(element._generateXSD())
 				
-				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
+				xsd += '<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
 			elif isinstance(element,ArrayProperty):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
 					complextype.append(element[0]._generateXSD())
-					xsd += b'<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
+					xsd += '<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
-					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
+					xsd += '<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
 			
 			elif isinstance(element,list):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
@@ -274,16 +274,16 @@ class ComplexType(object):
 						ltype.append(element[0].__name__)
 						complextype.append(element[0]._generateXSD())
 					
-					xsd += b'<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
+					xsd += '<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
-					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
+					xsd += '<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
 			elif hasattr(element,'__name__'):
 				typeelement = createPythonType2XMLType(element.__name__)
-				xsd += b'<%s:element name="%s" type="%s:%s"/>'%(namespace,str(key),namespace,typeelement)
+				xsd += '<%s:element name="%s" type="%s:%s"/>'%(namespace,str(key),namespace,typeelement)
 
-		xsd += b'</%s:sequence>'%namespace
-		xsd += b'</%s:complexType>'%namespace
+		xsd += '</%s:sequence>'%namespace
+		xsd += '</%s:complexType>'%namespace
 		
 		if len(complextype) > 0:
 			for ct in complextype:
