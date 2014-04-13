@@ -502,12 +502,12 @@ def convert(typeelement,value):
 	elif typeelement == 'xsd:float' or typeelement == 'float':
 		return float(value)
 	elif typeelement == 'xsd:duration':
-		return unicode(value)
+		return str(value)
 	elif typeelement == 'xsd:date' or typeelement == 'date':
-		sdate = unicode(value).split('-')
+		sdate = str(value).split('-')
 		return date(int(sdate[0]),int(sdate[1]),int(sdate[2]))
 	elif typeelement == 'xsd:time' or typeelement == 'time':
-		stime = unicode(value).split(':')
+		stime = str(value).split(':')
 		hour = stime[0]
 		min  = stime[1]
 		seg  = '00'
@@ -527,9 +527,9 @@ def convert(typeelement,value):
 			seg = stime[2].split('.')[0]
 		return datetime(int(year),int(mon),int(day),int(hour),int(min),int(seg)).isoformat('T')
 	elif typeelement == 'xsd:string' or typeelement == 'str' or typeelement == 'unicode':
-		return unicode(value)
+		return str(value)
 	elif typeelement == 'xsd:boolean' or typeelement == 'bool':
-		return unicode(value).lower()
+		return str(value).lower()
 
 def createPythonType2XMLType(pyType):
 	""" Function that creates a xml type from a python type """
