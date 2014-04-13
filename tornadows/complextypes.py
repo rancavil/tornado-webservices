@@ -140,14 +140,14 @@ class ComplexType(object):
 	
 	    if __name__ == '__main__':
 		print 'XML Schema : '
-		print Person.toXSD()
+		print(Person.toXSD())
 		
 		p = Person()
 		p.name.value = 'Steve J'
 		p.age.value  = 38
 
-		print 'XML Document : '
-		print p.toXML()
+		print('XML Document : ')
+		print(p.toXML())
 
 	    or you if you want to use some python types (int, str, float, bool)
 
@@ -158,15 +158,15 @@ class ComplexType(object):
 		age  = int
 	
 	    if __name__ == '__main__':
-		print 'XML Schema : '
-		print Person.toXSD()
+		print('XML Schema : ')
+		print(Person.toXSD())
 		
 		p = Person()
 		p.name.value = 'Steve J'
 		p.age.value  = 38
 
-		print 'XML Document : '
-		print p.toXML()
+		print('XML Document : ')
+		print(p.toXML())
 
 	"""
 	def __init__(self):
@@ -212,7 +212,7 @@ class ComplexType(object):
 			else:
 				xml += '<%s>%s</%s>'%(key,convert(type(element).__name__,element),key)
 		xml += '</%s>'%nameroot
-		return xml.encode('utf-8')
+		return str(xml)
 					
 	@classmethod
 	def toXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd',method='', ltype=[]):
