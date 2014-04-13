@@ -60,12 +60,12 @@ class FibonacciService(soaphandler.SoapHandler):
 		return result
 
 if __name__ == '__main__':
-	service = [('EchoService',EchoService),
-        	   ('EchoTargetnsService', EchoTargetnsService),
-        	   ('CountService',CountService),
-             	   ('DivService',DivService),
-             	   ('FibonacciService',FibonacciService)]
-    app = webservices.WebService(service)
-    ws  = tornado.httpserver.HTTPServer(app)
-    ws.listen(8080)
-    tornado.ioloop.IOLoop.instance().start()
+     service = [('EchoService',EchoService),
+                ('EchoTargetnsService', EchoTargetnsService),
+                ('CountService',CountService),
+                ('DivService',DivService),
+                ('FibonacciService',FibonacciService)]
+     app = webservices.WebService(service)
+     ws  = tornado.httpserver.HTTPServer(app)
+     ws.listen(8080)
+     tornado.ioloop.IOLoop.instance().start()
