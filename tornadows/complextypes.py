@@ -248,7 +248,7 @@ class ComplexType(object):
 
 				if ltype.count(self._elementInput.getName()) == 0:
 					ltype.append(self._elementInput.getName())
-					complextype.append(element._generateXSD())
+					complextype.append(element._generateXSD(ltype=[]))
 				
 				xsd += '<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
 			elif inspect.isclass(element) and issubclass(element,ComplexType): 
@@ -256,12 +256,12 @@ class ComplexType(object):
 				
 				if ltype.count(element.getName()) == 0:
 					ltype.append(element.getName())
-					complextype.append(element._generateXSD())
+					complextype.append(element._generateXSD(ltype=[]))
 				
 				xsd += '<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())			
 			elif isinstance(element,ArrayProperty):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
-					complextype.append(element[0]._generateXSD())
+					complextype.append(element[0]._generateXSD(ltype=[]))
 					xsd += '<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
@@ -272,7 +272,7 @@ class ComplexType(object):
 
 					if ltype.count(element[0].__name__) == 0:
 						ltype.append(element[0].__name__)
-						complextype.append(element[0]._generateXSD())
+						complextype.append(element[0]._generateXSD(ltype=[]))
 					
 					xsd += '<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
 				else:
