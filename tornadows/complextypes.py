@@ -180,7 +180,7 @@ class ComplexType(object):
 				typeobj = self._createAttributeType(element)
 				setattr(self,attr,typeobj)
 
-	def toXML(self,name=None):
+	def toXML(self,name=None,method=''):
 		""" Method that creates the XML document for the instance of python class.
 		    Return a string with the xml document.
 		 """
@@ -190,6 +190,7 @@ class ComplexType(object):
 			nameroot = self.__class__.__name__
 		else:
 			nameroot = name
+		nameroot += method
 
 		xml = '<%s>'%nameroot
 		default_attr = dir(type('default',(object,),{}))

@@ -205,7 +205,7 @@ class SoapHandler(tornado.web.RequestHandler):
 				
 		typesoutput = getattr(operation,'_output')
 		if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
-			res = self._createReturnsComplexType(response)
+			res = self._createReturnsComplexType(response, method=method)
 		else:
 			res = self._createReturns(response,is_array)
 	
@@ -301,11 +301,11 @@ class SoapHandler(tornado.web.RequestHandler):
 				values.append(None)
 		return values
 
-	def _createReturnsComplexType(self,result):
+	def _createReturnsComplexType(self,result,method=''):
 		""" Private method to generate the xml document with the response. 
 		    Return an SoapMessage() with XML document.
 		"""
-		response = xml.dom.minidom.parseString(result.toXML())
+		response = xml.dom.minidom.parseString(result.toXML(method=method))
 		
 		soapResponse = soap.SoapMessage()
 		soapResponse.setBody(response)
