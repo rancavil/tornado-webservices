@@ -148,8 +148,13 @@ class SoapHandler(tornado.web.RequestHandler):
 				fd.close()
 				self.finish(xmlWSDL)
 
+	@tornado.web.asynchronous
 	def post(self):
 		""" Method post() to process of requests and responses SOAP messages """
+		def done(response):
+			soapmsg = response.getSoap().toxml()
+			self.write(soapmsg)
+			self.finish()
 		try:
 			self._request = self._parseSoap(self.request.body)
 			soapaction = self.request.headers['SOAPAction'].replace('"','')
@@ -161,14 +166,11 @@ class SoapHandler(tornado.web.RequestHandler):
 					num_methods = self._countOperations()
 					if hasattr(operation,'_operation') and soapaction.endswith(getattr(operation,'_operation')) and num_methods > 1:
 						method = getattr(operation,'_operation') 
-						self._response = self._executeOperation(operation,method=method)
+						self._executeOperation(operation, done, method=method)
 						break
 					elif num_methods == 1:
-						self._response = self._executeOperation(operation,method='')
+						self._executeOperation(operation, done, method='')
 						break
-
-			soapmsg = self._response.getSoap().toxml()
-			self.write(soapmsg)
 		except Exception as detail:
 			fault = soapfault('Error in web service : %s'%detail)
 			self.write(fault.getSoap().toxml())
@@ -182,14 +184,13 @@ class SoapHandler(tornado.web.RequestHandler):
 				c += 1	
 		return c
 
-	def _executeOperation(self,operation,method=''):
+	def _executeOperation(self, operation, callback, method=''):
 		""" Private method that executes operations of web service """
 		params = []
 		response = None
 		res = None
 		typesinput = getattr(operation,'_input')
 		args  = getattr(operation,'_args')
-
 		if inspect.isclass(typesinput) and issubclass(typesinput,complextypes.ComplexType):
 			obj = self._parseComplexType(typesinput,self._request.getBody()[0],method=method)
 			response = operation(obj)
@@ -202,13 +203,19 @@ class SoapHandler(tornado.web.RequestHandler):
 		is_array = None
 		if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
 			is_array = getattr(operation,'_outputArray')
-				
-		typesoutput = getattr(operation,'_output')
-		if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
-			res = self._createReturnsComplexType(response, method=method)
-		else:
-			res = self._createReturns(response,is_array)
+		def done(response):
+			response = response()
+			typesoutput = getattr(operation, '_output')
+			if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
+				res = self._createReturnsComplexType(response, method=method)
+			else:
+				res = self._createReturns(response,is_array)
+			callback(res)
 	
+		if isinstance(response, tornado.concurrent.Future):
+			response.add_done_callback(lambda p: done(response.result))
+		else:
+			done(lambda: response)
 		return res
 
 	def _parseSoap(self,xmldoc):

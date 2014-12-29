@@ -24,9 +24,9 @@ except ImportError:
 
 setup(
 	name='tornado-webservices',
-	version = '0.9.4.4',
+	version = '0.9.5.0',
 	packages=['tornadows','demos'],
 	author='Innovaser',
 	author_email='rancavil@innovaser.cl',
-        install_requires=['tornado',],
+	install_requires=['tornado',],
 )
