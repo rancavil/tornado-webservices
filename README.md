@@ -15,13 +15,21 @@ The last version of tornadows uses tornado-2.2.
 
 Installation:
 -------------
-To install:
+- Using PIP:
+```
+$ pip install tornado-webservices
+```
+- Using easy_install:
+```
+$ easy_install tornado-webservices
+```
+- Manually:
+```
+$ tar xvzf tornado-webservices-version.tar.gz
+$ cd tornado-webservices-version
+$ python setup.py install
+```
 
-- Decompess the file tornadows-<version>.tar.gz
-- cd into tornadows-<version>
-- and execute:
-	python setup.py build
-	python setup.py install
 
 On Ubuntu (or similar) you need to use the sudo command...don't forget ;-)
 
