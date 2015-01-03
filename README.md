@@ -9,9 +9,9 @@ TornadoWS is licensed user the Apache License, Version 2.0
 Prerequisities:
 ---------------
 
-You need to have tornado-1.2.1.tar.gz installed, at least.
+You need to have tornado.
 
-The last version of tornadows uses tornado-2.2.
+http://www.tornadoweb.org/
 
 Installation:
 -------------
