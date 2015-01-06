@@ -3,7 +3,7 @@ Tornado Web Services:
 This is an implementation of SOAP Web Service API, to be used in a Tornado Web Server,
 taking advantage of the great features of that server.
 
-Tornado-WebService is licensed user the Apache License, Version 2.0
+tornado-webService is licensed user the Apache License, Version 2.0
 (http://www.apache.org/licenses/LICENSE-2.0).
 
 Prerequisities:
