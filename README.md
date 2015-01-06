@@ -3,7 +3,7 @@ Tornado Web Services:
 This is an implementation of SOAP Web Service API, to be used in a Tornado Web Server,
 taking advantage of the great features of that server.
 
-tornado-webService is licensed user the Apache License, Version 2.0
+tornado-webservice is licensed user the Apache License, Version 2.0
 (http://www.apache.org/licenses/LICENSE-2.0).
 
 Prerequisities:
@@ -31,5 +31,5 @@ $ python setup.py install
 ```
 
 
-On Ubuntu (or similar) you need to use the sudo command...don't forget ;-)
+On Linux systems (like ubuntu or similar)  you need to use the sudo command...don't forget ;-)
 
