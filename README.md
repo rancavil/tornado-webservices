@@ -9,7 +9,7 @@ TornadoWS is licensed user the Apache License, Version 2.0
 Prerequisities:
 ---------------
 
-You need to have tornado.
+You need to have tornado. you must download and install from:
 
 http://www.tornadoweb.org/
 
