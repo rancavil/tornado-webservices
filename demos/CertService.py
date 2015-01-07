@@ -43,7 +43,7 @@ class CertService(soaphandler.SoapHandler):
 		cert = CertificateResponse()
 		cert.numcert = 1
 		cert.idperson = idperson
-		cert.nameperson = 'Steve J'
+		cert.nameperson = 'Steve W'
 		cert.birthday = datetime.date(1973,12,11)
 		cert.datetimecert = datetime.datetime.now()
 		cert.isvalid = True
